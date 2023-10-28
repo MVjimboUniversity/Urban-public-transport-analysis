@@ -1,0 +1,38 @@
+.Form {
+    height: 400px;
+    width: 70%;
+    margin-left: 15%;
+    margin-right: 15%;
+    background-color: transparent;
+    padding: 10px;
+    font-size: 15px;
+    align-items: center;
+    padding-left: 150px;
+    padding-right: 150px;
+}
+
+.Selector {
+    height: 40px;
+    font-size: 15px;
+    padding: 0;
+    margin-bottom: 10px;
+    margin-left: 20%;
+    margin-right: 20%;
+    width: auto;
+}
+
+.Selector:focus {
+    color: aquamarine;
+    border-color: red;
+    border: none;
+}
+
+.Form:focus {
+    border-color:red;
+    border: 10px;
+}
+
+.Form Select:focus {
+    border-color:red;
+    border: 10px;
+}
