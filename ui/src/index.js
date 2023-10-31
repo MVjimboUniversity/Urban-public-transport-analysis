@@ -2,14 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import Home from './pages/Home'
+import './assets/styles/global.css'
+import Router from './components/ui/Router';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <Home></Home>
-  </React.StrictMode>
+    <React.StrictMode>
+        <Router></Router>
+    </React.StrictMode>
 );
-
 
 reportWebVitals();

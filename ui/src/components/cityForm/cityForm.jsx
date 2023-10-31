@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { cityService } from "../../services/city.service";
+import { cityService } from '../../services/city.service' 
 import Select from 'react-select'
-import styles from '../cityForm/cityForm.module.css'
+import styles from './cityForm.module.css'
+import { useNavigate } from "react-router-dom";
 
 
 const style = {
@@ -51,16 +52,31 @@ function CityForm() {
     }, [])
 
     const [selectedOption, setSelectedOption] = useState(cities);
-    
     function onChangeHandler(selectedOption) {
         setSelectedOption(selectedOption);
         console.log(`Selected: ${selectedOption.label}`);
+    }
+    console.log(selectedOption)
+    // passing data to new page
+    let dataToApp = {type : "City", dataArr: []};
+
+    const navigate = useNavigate();
+
+    function handler() {
+        if (selectedOption.length === 0) {
+            alert("Выберите город!");
+            navigate('/');
+        }
+        else {
+            dataToApp.dataArr.push(selectedOption);
+            navigate('/app', {state: dataToApp})
+        }
     }
 
     return (
         <div className={styles.form}>
             <Select styles={style} className={styles.selected} defaultValue={selectedOption} onChange={onChangeHandler} options={cities}></Select>
-            <button className={styles.btn} >Apply</button>
+            <button className={styles.btn} onClick={handler}>Apply</button>
         </div>
     )
 }
