@@ -1,0 +1,19 @@
+version: '3'
+name: 'public-transport-analysis-service'
+
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./ui/
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend/
+    ports:
+      - 80:80
