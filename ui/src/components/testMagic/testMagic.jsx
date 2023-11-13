@@ -13,19 +13,19 @@ function TestMagic() {
     return (
         <div className={styles.cont}>
             <Link className={styles.back} to={`/`}> Назад </Link>
-                <div className={styles.map}>
-                    <MapContainer className={styles.MapContainer} center={[59.920505, 30.343228]} zoom={13} scrollWheelZoom={false}>
-                    <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {(nodes.map((el) =>
-                    (
-                        <Circle key={el.id} center={el} radius={10}></Circle>
-                    )
-                    ))}
-                    <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
-                    </MapContainer>
+            <div className={styles.map}>
+                <MapContainer className={styles.MapContainer} center={[59.920505, 30.343228]} zoom={13} scrollWheelZoom={false}>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {(nodes.map((el) =>
+                (
+                    <Circle key={el.id} center={el} radius={10}></Circle>
+                )
+                ))}
+                <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
+                </MapContainer>
             </div>
         </div>
       
