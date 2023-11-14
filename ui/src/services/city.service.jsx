@@ -8,7 +8,6 @@ export const cityService = {
     },
     async getCity(cityName) {
         const response = await axios.get('http://localhost:80/tests/TramNetwork?city=' + cityName, {withCredentials: true});
-        console.log("response = ", JSON.parse(response.data));
         return JSON.parse(response.data);
     }
 }
