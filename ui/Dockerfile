@@ -12,11 +12,7 @@ COPY ./src /frontendtransit/src
  
 RUN npm install
 
-COPY ./public /frontendtransit/public
-
-COPY ./src /frontendtransit/src
-
-COPY ./package-lock.json /frontendtransit/
+COPY . /frontendtransit
 
 EXPOSE 3000
 

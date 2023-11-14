@@ -11,6 +11,7 @@ function App(props) {
     const location = useLocation()
     const type = location.state.type;
     const dataToApp = location.state.dataArr;
+    console.log(dataToApp)
     switch (type) {
         case "City":
             return (
@@ -19,7 +20,7 @@ function App(props) {
                     <p>Данные с предыдущей страницы</p>
                     <p>Тип предыдущей формы: {type}</p>
                     <p>Получены данные: {dataToApp[0].value} </p>
-                     <CityMap className={styles.Map} cityname={dataToApp[0]}></CityMap>
+                     <CityMap className={styles.Map} pos={[dataToApp[0].lat, dataToApp[0].lon]}></CityMap>
                 </div>)
         case "Polygon":
             let polygonPos = [];
