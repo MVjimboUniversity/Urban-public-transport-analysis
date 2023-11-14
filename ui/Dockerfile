@@ -6,6 +6,8 @@ WORKDIR /frontendtransit
 
 COPY package.json /frontendtransit
 
+COPY package-lock.json /frontendtransit
+
 COPY ./public /frontendtransit/public
 
 COPY ./src /frontendtransit/src
