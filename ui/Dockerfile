@@ -5,6 +5,10 @@ RUN mkdir /frontendtransit
 WORKDIR /frontendtransit
 
 COPY package.json /frontendtransit
+
+COPY ./public /frontendtransit/public
+
+COPY ./src /frontendtransit/src
  
 RUN npm install
 

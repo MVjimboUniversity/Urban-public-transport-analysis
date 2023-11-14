@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { cityService } from "../../services/city.service";
-import Select from 'react-select'
-import styles from './CityForm.module.css'
+import { cityService } from '../../services/city.service';
+import Select from 'react-select';
+import styles from './CityForm.module.css';
 import { useNavigate } from "react-router-dom";
 
 
@@ -73,15 +73,10 @@ function CityForm() {
         }
     }
 
-    function toMagic() {
-        navigate('/test');
-    }
-
     return (
         <div className={styles.form}>
             <Select styles={style} className={styles.selected} defaultValue={selectedOption} onChange={onChangeHandler} options={cities}></Select>
             <button className={styles.btn} onClick={handler}>Apply</button>
-            <button className={styles.btn} onClick={toMagic}>testMagic</button>
         </div>
     )
 }
