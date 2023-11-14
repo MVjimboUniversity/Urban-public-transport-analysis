@@ -6,15 +6,13 @@ WORKDIR /frontendtransit
 
 COPY package.json /frontendtransit
 
+RUN npm install
+
 COPY package-lock.json /frontendtransit
 
 COPY ./public /frontendtransit/public
 
 COPY ./src /frontendtransit/src
- 
-RUN npm install
-
-COPY . /frontendtransit
 
 EXPOSE 3000
 
