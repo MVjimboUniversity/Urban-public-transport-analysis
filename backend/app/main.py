@@ -3,18 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import tests
 
+
 app = FastAPI()
 
-origins = [
-    "http://localhost",
-    "http://localhost:80",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
     allow_headers=["*"],
 )
 

@@ -6,6 +6,27 @@
     border: none;
 }
 
+.form input {
+    margin: 5px 0;
+    display: block;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border-width: 1px;
+    outline: none;
+    transition: border-color 0.4s ease;
+    border: 1px solid transparent;
+    height: 40px;
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+.form input:focus {
+    box-shadow: 0 0 10px #00000080;
+    border-color: #8a2be2;
+}
+
 .selected {
     display: block;
     align-items: center;
@@ -22,6 +43,7 @@
     width: 80%;
     margin-left: 10%;
     margin-right: 10%;
+    margin-top: 5px;
     transition-duration: 200ms;
 }
 
