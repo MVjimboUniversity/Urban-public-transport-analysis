@@ -1,5 +1,5 @@
 import React from "react";
-import styles from './RectangleForm.module.css'
+import styles from '../rectangleForm/RectangleForm.module.css'
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as yup from 'yup'

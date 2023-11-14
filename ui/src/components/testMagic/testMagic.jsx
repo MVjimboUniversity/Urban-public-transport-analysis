@@ -10,9 +10,13 @@ function TestMagic() {
     let nodes = geoObject.nodes.features.map(item => [item.properties.y, item.properties.x]);
     let edges = geoObject.edges.features.map(item => [item.geometry.coordinates.map((el) => ([el[1], el[0]]))]);
     
+
     return (
-        <div className={styles.cont}>
+        <div className={styles.App}>
             <Link className={styles.back} to={`/`}> Назад </Link>
+            <p>Пробная отрисовка </p>
+            <p>Данные:</p>
+            <p>Трамвайный граф города Санкт-Петербург</p>
             <div className={styles.map}>
                 <MapContainer className={styles.MapContainer} center={[59.920505, 30.343228]} zoom={13} scrollWheelZoom={false}>
                 <TileLayer
@@ -25,10 +29,9 @@ function TestMagic() {
                 )
                 ))}
                 <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
-                </MapContainer>
+            </MapContainer>
             </div>
         </div>
-      
     )
 }
 

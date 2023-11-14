@@ -3,7 +3,6 @@ import styles from '../Map/Map.module.css'
 import { MapContainer, TileLayer } from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
 import { Rectangle } from "react-leaflet";
-//import TestMagic from "../../testMagic/testMagic";
 
 
 function RectangleMap({pos}) {
@@ -13,7 +12,7 @@ function RectangleMap({pos}) {
         [parseFloat(pos[1]), parseFloat(pos[3])]
     ];
     const Center = [(rectangle[0][0] + rectangle[1][0]) / 2 , (rectangle[0][1] + rectangle[1][1]) / 2];
-    return (
+    return (<div>
         <MapContainer className={styles.MapContainer} center={Center} zoom={13} scrollWheelZoom={false}>
             <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -26,6 +25,7 @@ function RectangleMap({pos}) {
             </Marker>
             <Rectangle bounds={rectangle} pathOptions={blackOptions}/>
         </MapContainer>
+        </div>
       )
 }   
 

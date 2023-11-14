@@ -1,46 +1,58 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from '../Map/Map.module.css'
-import { MapContainer, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer, Polyline, Circle } from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
-// import LocationGetter from "./LocationGetter"
-import { useMapEvents } from "react-leaflet";
-import { Polygon } from "react-leaflet";
+import { useLocation } from "react-router";
+import { cityService } from "../../../services/city.service";
 
 
-function CityMap({pos}) {
-    const [positions, setPositions] = useState([]);
+function CityMap({cityname}) {
+    const limeOptions = { color: 'lime' }
+    const location = useLocation();
+    const dataToApp = location.state;
+    console.log(dataToApp);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [edges, setEdges] = useState([]);
+    const [nodes, setNodes] = useState([]);
+    const [center, setCenter] = useState([]);
 
-    function LocationGetter() {
-      useMapEvents({
-          click(e) {
-              setPositions([...positions, e.latlng]);
-              console.log(positions);
-          }
-      });
-      return null;
+    useEffect( () => {
+        const fetchData = async () => {
+            const data = await cityService.getCity(cityname);
+            setCenter([data.center[1], data.center[0]]);
+            setEdges(data.edges.features.map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+            setNodes(data.nodes.features.map(item => [item.properties.y, item.properties.x, item.id]));
+            setIsLoaded(true);
+        }
+        fetchData();
+    }, [isLoaded, cityname]);
+    console.log(nodes);
+    if (!isLoaded) {
+      return (
+        <div>
+          Загрузка
+        </div>
+      )
     }
-
-    function clear() {
-      setPositions([]);
-    }
-
-    return (
-      <div className={styles.MapContainer}>
-        <MapContainer className={styles.Map} center={[pos[0], pos[1]]} zoom={13} scrollWheelZoom={false}>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={[pos[0], pos[1]]}>
-            <Popup>
-              A pretty CSS3 popup. <br /> Easily customizable.
-            </Popup>
-          </Marker>
-          <LocationGetter></LocationGetter>
-          <Polygon positions={positions}></Polygon>
-        </MapContainer>
-        <button className={styles.btn} onClick={clear}>Очистить форму</button>
-      </div>     
-)}
+    else return (
+      <MapContainer className={styles.MapContainer} center={center} zoom={13} scrollWheelZoom={false}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <Marker position={center}>
+          <Popup>
+            Центр города.
+          </Popup>
+        </Marker>
+        {(nodes.map((el) =>
+          (
+              <Circle key={el[2]} center={[el[0], el[1]]} radius={10}></Circle>
+          )
+        ))}
+        <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
+      </MapContainer>
+  )
+}
 
 export default CityMap

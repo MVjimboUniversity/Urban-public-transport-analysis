@@ -6,7 +6,13 @@ import styles from '../Map/Map.module.css'
 
 function PolygonMap({pos}) {
     const blackOptions = { color: 'black' }
+    // const polygon = [
+    //     [51.515, -0.09],
+    //     [51.52, -0.1],
+    //     [51.52, -0.12],
+    //   ];
     const Center = [(pos[0][0][0] + pos[0][1][0]) / 2, (pos[0][0][1] + pos[0][1][1]) / 2]
+    console.log("Center = ", Center);
     return (
         <MapContainer className={styles.MapContainer} center={Center} zoom={13} scrollWheelZoom={true}>
             <TileLayer
