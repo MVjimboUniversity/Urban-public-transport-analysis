@@ -5,8 +5,7 @@
     width: 80%;
     margin-left: 10%;
     margin-right: 10%;
-    padding: 10px;
-    margin-top: 10px;
+    padding: 5%;
 }
 
 .Map {
@@ -14,7 +13,6 @@
     border: 0;
     height: 100%;
     width: 100%;
-    padding: 10px;
 }
 
 .btn {
@@ -25,6 +23,7 @@
     width: 80%;
     margin-left: 10%;
     margin-right: 10%;
+    margin-top: 5px;
     transition-duration: 200ms;
 }
 
