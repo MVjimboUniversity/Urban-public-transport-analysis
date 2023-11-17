@@ -3,6 +3,7 @@ research/cache/
 # js/frontend
 # dependencies
 /node_modules
+/ui/node_modules
 /.pnp
 .pnp.js
 

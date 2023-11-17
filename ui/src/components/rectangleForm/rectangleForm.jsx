@@ -1,6 +1,17 @@
 import React from "react";
-import styles from '../rectangleForm/rectangleForm.module.css'
+import styles from '../rectangleForm/RectangleForm.module.css'
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import * as yup from 'yup'
+
+
+// filter to vaildate data
+let shape = yup.object().shape({
+    top: yup.number().required(),
+    bottom: yup.number().required(),
+    left: yup.number().required(),
+    right: yup.number().required()
+})
 
 
 function RectangleForm() {
@@ -8,13 +19,33 @@ function RectangleForm() {
     const [bottom, setBottom] = useState('')
     const [left, setLeft] = useState('')
     const [right, setRight] = useState('')
-    
 
-    function onChangeHandler() {
-        console.log("top = ", top);
-        console.log("bottom = ", bottom);
-        console.log("left = ", left);
-        console.log("right = ", right);
+    const navigate = useNavigate()
+    // data to be sent
+    let data = {type: "Rectangle", dataArr: []}
+
+    // validating data
+    async function validateForm() {
+        let dataObject = {
+            top: top,
+            bottom: bottom,
+            left: left, 
+            right: right
+        };
+    
+        const isValid = await shape.isValid(dataObject);
+    
+        if (!isValid) {
+            alert("Заполните все поля числами!")
+        }
+        else {
+            data.dataArr = [];
+            data.dataArr.push(top);
+            data.dataArr.push(bottom);
+            data.dataArr.push(left);
+            data.dataArr.push(right);
+            navigate('/app', {state: data});
+        }
     }
 
     return (
@@ -23,7 +54,7 @@ function RectangleForm() {
                 <input placeholder="Bottom" onChange={e => setBottom(e.target.value)} value = {bottom}/>
                 <input placeholder="Left" onChange={e => setLeft(e.target.value)} value = {left}></input>
                 <input placeholder="Right" onChange={e => setRight(e.target.value)} value = {right}></input>
-                <button type='button' className={styles.btn} onClick={onChangeHandler}>Apply</button>
+                <button type='button' className={styles.btn} onClick={validateForm}>Apply</button>
             </form>
     )
 }
