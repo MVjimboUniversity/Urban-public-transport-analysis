@@ -1,12 +1,17 @@
 .App {
     background-color: #F4EEE0;
-    margin-left: 20%;
-    margin-right: 20%;
-    width: 60%;
+    margin-left: 10%;
+    margin-right: 10%;
+    width: 80%;
     height: 100%;
     display: block;
     align-items: center;
     font-family: 'Sometype Mono', monospace;
+}
+
+.head {
+    height: 10%;
+    width: 100%;
 }
 
 .Map {

@@ -28,7 +28,7 @@ function CityForm() {
 
     return (
         <div className={styles.form}>
-            <input className={styles.form} placeholder="Название города" onChange={e => setCity(e.target.value)} value={city} ></input>
+            <input placeholder="Название города" onChange={e => setCity(e.target.value)} value={city} ></input>
             <button className={styles.btn} onClick={handler}>Apply</button>
             <button className={styles.btn} onClick={toMagic}>testMagic</button>
         </div>

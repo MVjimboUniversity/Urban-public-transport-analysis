@@ -1,4 +1,6 @@
 import axios from "axios"
+import { BASE_URL } from ".."
+
 
 export const cityService = {
     async getAll() {
@@ -8,6 +10,10 @@ export const cityService = {
     },
     async getCity(cityName) {
         const response = await axios.get('http://localhost:80/tests/TramNetwork/name?city=' + cityName, {withCredentials: true});
+        return JSON.parse(response.data);
+    },
+    async getBbox(bbox) {
+        const response = await axios.get(BASE_URL + `/TramNetwork/bbox?north=${bbox.north}south=${bbox.south}east=${bbox.east}west=${bbox.west}`);
         return JSON.parse(response.data);
     }
 }

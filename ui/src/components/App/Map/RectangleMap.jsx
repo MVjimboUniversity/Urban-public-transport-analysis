@@ -43,8 +43,8 @@ function RectangleMap({pos}) {
                 <Rectangle bounds={rectangle} pathOptions={blackOptions}/>
                 <Polygon pathOptions={redOptions} positions={positions}></Polygon>
                 <LocationGetter/>
-                <button className={styles.btn} onClick={clear}>Очистить карту</button>
             </MapContainer>
+            <button className={styles.btn} onClick={clear}>Очистить карту</button>
         </div>
       )
 }   

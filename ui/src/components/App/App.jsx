@@ -32,11 +32,13 @@ function App(props) {
                 polygonOutput += ' '
             }
             return (
-                <div className={styles.App}>       
-                <Link className={styles.back} to={`/`}> Назад </Link>
-                <p>Данные с предыдущей страницы</p>
-                <p>Тип предыдущей формы: {type}</p>
-                <p>Получены данные:<br/> {polygonOutput}</p>
+                <div className={styles.App}>
+                    <div className={styles.head}>
+                        <Link className={styles.back} to={`/`}> Назад </Link>
+                        <p>Данные с предыдущей страницы</p>
+                        <p>Тип предыдущей формы: {type}</p>
+                        <p>Получены данные:<br/> {polygonOutput}</p>
+                    </div>       
                 <PolygonMap pos={dataToApp}/>
         </div>)
         case "Rectangle":
@@ -47,12 +49,14 @@ function App(props) {
                 rectanglePos.push(dataToApp[i]);
             }
             return (
-                <div className={styles.App}>   
-                <Link className={styles.back} to={`/`}> Назад </Link>
-                <p>Данные с предыдущей страницы</p>
-                <p>Тип предыдущей формы: { type }</p>
-                <p>Получены данные: { output }</p>
-                <RectangleMap pos={rectanglePos}></RectangleMap>
+                <div className={styles.App}>
+                    <div className={styles.head}>
+                        <Link className={styles.back} to={`/`}> Назад </Link>
+                        <p>Данные с предыдущей страницы</p>
+                        <p>Тип предыдущей формы: {type}</p>
+                        <p>Получены данные:<br/> {output}</p>
+                    </div>       
+                <RectangleMap pos={rectanglePos}/>
         </div>)
         default:
             break;
