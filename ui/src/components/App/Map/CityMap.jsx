@@ -1,21 +1,38 @@
 import React, { useEffect, useState } from "react";
 import styles from '../Map/Map.module.css'
-import { MapContainer, TileLayer, Polyline, Circle } from 'react-leaflet'
+import { MapContainer, TileLayer, Polyline, Circle, Polygon, useMapEvents } from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
-import { useLocation } from "react-router";
 import { cityService } from "../../../services/city.service";
 
 
+
+
+
 function CityMap({cityname}) {
-    const limeOptions = { color: 'lime' }
-    const location = useLocation();
-    const dataToApp = location.state;
-    console.log(dataToApp);
+    const limeOptions = { color: 'lime' };
+    const redOptions = { color: 'red' };
+
     const [isLoaded, setIsLoaded] = useState(false);
     const [edges, setEdges] = useState([]);
     const [nodes, setNodes] = useState([]);
     const [center, setCenter] = useState([]);
 
+    // Press on map
+    const [positions, setPositions] = useState([]);
+    function LocationGetter() {
+        useMapEvents({
+              click(e) {
+                  setPositions([...positions, e.latlng]);
+              }
+        });
+        return null;
+    }
+
+    function clear() {
+        setPositions([]);
+    }
+
+    console.log('usp = ', positions);
     useEffect( () => {
         const fetchData = async () => {
             const data = await cityService.getCity(cityname);
@@ -25,33 +42,37 @@ function CityMap({cityname}) {
             setIsLoaded(true);
         }
         fetchData();
-    }, [isLoaded, cityname]);
-    console.log(nodes);
+    },  [isLoaded, cityname]);
     if (!isLoaded) {
-      return (
-        <div>
-          Загрузка
-        </div>
-      )
+        return (
+            <div>
+                Загрузка
+            </div>
+        )
     }
     else return (
-      <MapContainer className={styles.MapContainer} center={center} zoom={13} scrollWheelZoom={false}>
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Marker position={center}>
-          <Popup>
-            Центр города.
-          </Popup>
-        </Marker>
-        {(nodes.map((el) =>
-          (
-              <Circle key={el[2]} center={[el[0], el[1]]} radius={10}></Circle>
-          )
-        ))}
-        <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
-      </MapContainer>
+        <div className={styles.MapContainer}>
+            <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={false}>
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={center}>
+                <Popup>
+                  Центр города.
+                </Popup>
+              </Marker>
+              <LocationGetter/>
+              {(nodes.map((el) =>
+                (
+                    <Circle key={el[2]} center={[el[0], el[1]]} radius={10}></Circle>
+                )
+              ))}
+              <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
+              <Polygon pathOptions={redOptions} positions={positions}></Polygon>
+            </MapContainer>
+            <button className={styles.btn} onClick={clear}>Очистить карту</button>
+        </div>
   )
 }
 
