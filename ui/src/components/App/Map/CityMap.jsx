@@ -3,9 +3,7 @@ import styles from '../Map/Map.module.css'
 import { MapContainer, TileLayer, Polyline, Circle, Polygon, useMapEvents } from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
 import { cityService } from "../../../services/city.service";
-
-
-
+import HashLoader from "react-spinners/HashLoader";
 
 
 function CityMap({cityname}) {
@@ -45,8 +43,8 @@ function CityMap({cityname}) {
     },  [isLoaded, cityname]);
     if (!isLoaded) {
         return (
-            <div>
-                Загрузка
+            <div className={styles.MapContainer}>
+                <HashLoader color={'#352F44'} size={100} className={styles.loader}></HashLoader>   
             </div>
         )
     }

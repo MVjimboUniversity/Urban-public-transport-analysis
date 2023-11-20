@@ -1,11 +1,16 @@
 .MapContainer {
-    display: block;
+    display: flex;
     border: 0;
-    height: 80%;
+    height: 90%;
     width: 90%;
     margin-left: 5%;
     margin-right: 5%;
     padding: 5%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    flex: 1;
 }
 
 .Map {
@@ -31,4 +36,9 @@
     background-color: #FAF0E6;
     transition-duration: 200ms;
     transition-timing-function: ease-in-out;
+}
+
+.loader {
+    align-self: center;
+    flex: 1;
 }

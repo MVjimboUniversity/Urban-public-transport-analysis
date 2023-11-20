@@ -13,7 +13,7 @@ export const cityService = {
         return JSON.parse(response.data);
     },
     async getBbox(bbox) {
-        const response = await axios.get(BASE_URL + `/TramNetwork/bbox?north=${bbox.north}south=${bbox.south}east=${bbox.east}west=${bbox.west}`);
+        const response = await axios.get(BASE_URL + `/TramNetwork/bbox?north=${bbox.north}&south=${bbox.south}&east=${bbox.east}&west=${bbox.west}`);
         return JSON.parse(response.data);
     }
 }
