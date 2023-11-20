@@ -1,8 +1,11 @@
 import json
 from typing import Annotated
-import osmnx as ox
+# import osmnx as ox
 from fastapi import APIRouter, Query, Body
 from shapely import Polygon
+
+import app.public_transport_osmnx.osmnx as ox
+
 
 # Тестовое API для отладки работы фронта и бэка вместе. Впоследствии API будет отключено.
 
@@ -18,7 +21,7 @@ async def tram_network_by_name(city: Annotated[str, Query(description="Назв�
     """
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
-    G = ox.graph_from_place(city, custom_filter='["railway"~"tram"]')
+    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     data = {
         "center": [geocode_gdf.loc[0, "lon"], geocode_gdf.loc[0, "lat"]],
