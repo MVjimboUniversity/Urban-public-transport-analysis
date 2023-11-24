@@ -29,7 +29,7 @@ function CityMap({cityname}) {
     function clear() {
         setPositions([]);
     }
-
+    
     console.log('usp = ', positions);
     useEffect( () => {
         const fetchData = async () => {
@@ -51,23 +51,23 @@ function CityMap({cityname}) {
     else return (
         <div className={styles.MapContainer}>
             <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={false}>
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <Marker position={center}>
-                <Popup>
-                  Центр города.
-                </Popup>
-              </Marker>
-              <LocationGetter/>
-              {(nodes.map((el) =>
-                (
-                    <Circle key={el[2]} center={[el[0], el[1]]} radius={10}></Circle>
-                )
-              ))}
-              <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
-              <Polygon pathOptions={redOptions} positions={positions}></Polygon>
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={center}>
+                    <Popup>
+                      Центр города.
+                    </Popup>
+                </Marker>
+                <LocationGetter/>
+                {(nodes.map((el) =>
+                    (
+                        <Circle key={el[2]} center={[el[0], el[1]]} radius={10}></Circle>
+                    )
+                ))}
+                <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
+                <Polygon pathOptions={redOptions} positions={positions}></Polygon>
             </MapContainer>
             <button className={styles.btn} onClick={clear}>Очистить карту</button>
         </div>

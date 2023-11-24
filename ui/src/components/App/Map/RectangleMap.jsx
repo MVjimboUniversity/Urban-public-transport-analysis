@@ -14,7 +14,7 @@ function RectangleMap({pos}) {
     const [nodes, setNodes] = useState([]);
     //const [center, setCenter] = useState([]);
 
-    // map options
+    // map settings
     const blackOptions = { color: 'black' };
     const redOptions = { color: 'red' };
     const limeOptions = { color: 'lime' };
@@ -26,7 +26,7 @@ function RectangleMap({pos}) {
 
     // getting data from api
     
-    let bbox = useMemo(() => [], [])
+    let bbox = useMemo(() => [], []);
     bbox = {
         north: rectangle[0][0],
         south: rectangle[1][0],
