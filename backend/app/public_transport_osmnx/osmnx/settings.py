@@ -163,8 +163,6 @@ timeout = 180
 use_cache = True
 useful_tags_node = ["ref", "highway", "name", "public_transport", "bus", "trolleybus", "tram", "subway"]
 useful_tags_way = [
-    "bridge",
-    "tunnel",
     "oneway",
     "lanes",
     "ref",
@@ -178,6 +176,7 @@ useful_tags_way = [
     "width",
     "est_width",
     "junction",
+    "railway"    
 ]
 useful_tags_relation = [
     "from",
