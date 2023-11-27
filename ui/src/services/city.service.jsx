@@ -20,5 +20,10 @@ export const cityService = {
     async getPolygon(polygon) {
         const response = await axios.post(BASE_URL + '/TramNetwork/polygon', polygon, {headers: {"Content-Type": "application/json"}, withCredentials: true});
         return JSON.parse(response.data);
+    }, 
+    async dbCheck() {
+        const response = await axios.get('http://localhost:80/network/db/check');
+        console.log('rsp', response.data);
+        return JSON.parse(response.data);
     }
 }
