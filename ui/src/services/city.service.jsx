@@ -9,7 +9,7 @@ export const cityService = {
         return response.data
     },
     async getCity(cityName) {
-        const response = await axios.get('http://localhost:80/tests/TramNetwork/name?city=' + cityName, {withCredentials: true});
+        const response = await axios.get('http://localhost:80/network/name?city=' + cityName, {withCredentials: true});
         return JSON.parse(response.data);
     },
     async getBbox(bbox) {

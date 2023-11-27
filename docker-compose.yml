@@ -1,7 +1,33 @@
-version: '3'
+version: '3.1'
 name: 'public-transport-analysis-service'
 
 services:
+  graphdb:
+    container_name: neo4j
+    image: neo4j:5.13
+    restart: always
+    ports:
+      - 7474:7474
+      - 7687:7687
+    environment:
+      - NEO4J_AUTH=neo4j/123456789
+    volumes:
+      - neo4jdata:/data
+      - neo4jlogs:/logs
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend/
+    ports:
+      - 80:80
+    environment:
+      - NEO4J_URI=neo4j://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=123456789
+    depends_on:
+      - graphdb
+
   frontend:
     container_name: frontend
     build:
@@ -11,9 +37,6 @@ services:
     depends_on:
       - backend
 
-  backend:
-    container_name: backend
-    build:
-      context: ./backend/
-    ports:
-      - 80:80
+volumes:
+  neo4jdata:
+  neo4jlogs:

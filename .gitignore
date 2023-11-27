@@ -1,4 +1,6 @@
 research/cache/
+research/public_transport_osmnx/
+research/data/
 
 # js/frontend
 # dependencies
