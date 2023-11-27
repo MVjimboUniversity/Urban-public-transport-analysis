@@ -1,6 +1,11 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
 .form {
     width: 100%;
-    margin: 10px auto 30px;
+    margin: 10px 0;
     align-items: center;
     vertical-align: middle; 
     border: none;
@@ -44,6 +49,7 @@
     margin-left: 10%;
     margin-right: 10%;
     margin-top: 5px;
+    margin-bottom: 0;
     transition-duration: 200ms;
 }
 
@@ -51,4 +57,29 @@
     background-color: #FAF0E6;
     transition-duration: 200ms;
     transition-timing-function: ease-in-out;
+}
+
+.CheckboxForm {
+    display: flex;
+    width: 90%;
+    margin-left: 2%;
+}
+
+.chckbox {
+    font-size: 13px;
+}
+
+.formControlLabel {
+    color:red;
+    font-size: 30px;
+}
+
+.asd {
+    background-color: white;
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
 }

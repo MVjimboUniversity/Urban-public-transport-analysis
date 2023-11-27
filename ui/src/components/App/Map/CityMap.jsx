@@ -6,7 +6,7 @@ import { cityService } from "../../../services/city.service";
 import HashLoader from "react-spinners/HashLoader";
 
 
-function CityMap({cityname}) {
+function CityMap({cityname, transport}) {
     const limeOptions = { color: 'lime' };
     const redOptions = { color: 'red' };
 
@@ -30,7 +30,6 @@ function CityMap({cityname}) {
         setPositions([]);
     }
     
-    console.log('usp = ', positions);
     useEffect( () => {
         const fetchData = async () => {
             const data = await cityService.getCity(cityname);

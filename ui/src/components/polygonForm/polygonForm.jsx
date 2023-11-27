@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import styles from './PolygonForm.module.css'
 import * as yup from 'yup'
 import { useNavigate } from "react-router-dom";
+import Checkbox from '@mui/material/Checkbox';
+import { FormControlLabel, FormGroup, Typography } from "@mui/material";
+
 
 let shape = yup.object().shape({
     polygon: yup.string().required(),
@@ -42,16 +45,19 @@ function parser(str) {
         leftBracket = str.indexOf('(', currentIndex);
     }
 
-    console.log(result);
     return result;
 }
 
 
 function PolygonForm() {
     const [polygon, setPolygon] = useState('')
+    const [tramSelected, setTramSelected] = useState(false);
+    const [autobusSelected, setAutobusSelected] = useState(false);
+    const [trolleybusSelected, setTrolleybusSelected] = useState(false);
+
     const navigate = useNavigate()
 
-    let dataToApp = {type : "Polygon", dataArr: []}
+    let dataToApp = {type : "Polygon", dataArr: [], transport: {autobus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
 
     async function validateForm() {
         let dataObject = {
@@ -73,13 +79,26 @@ function PolygonForm() {
             else {
                 dataToApp.dataArr = [];
                 dataToApp.dataArr.push(data);
-                navigate('/app', {state: dataToApp})
+                dataToApp.transport.autobus = autobusSelected;
+                dataToApp.transport.trolleybus = trolleybusSelected;
+                dataToApp.transport.tram = tramSelected;
+                navigate('/app', {state: dataToApp});
             }
         }
     }
     return (
         <form className={styles.form}>
             <input placeholder="Polygon" onChange={e => setPolygon(e.target.value)} value={polygon}></input>
+            <div className={styles.asd}>
+                <FormGroup className={styles.CheckboxForm}>   
+                    <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Автобус</Typography>} 
+                    checked={autobusSelected} onChange={(e) => setAutobusSelected(e.target.checked)}/>
+                    <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Троллейбус</Typography>} 
+                    checked={trolleybusSelected} onChange={(e) => setTrolleybusSelected(e.target.checked)}/>
+                    <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Трамвай</Typography>} 
+                    checked={tramSelected} onChange={(e) => setTramSelected(e.target.checked)}/>
+                </FormGroup>
+            </div>
             <button type='button' className={styles.btn} onClick={validateForm} >Apply</button>
         </form>
     )

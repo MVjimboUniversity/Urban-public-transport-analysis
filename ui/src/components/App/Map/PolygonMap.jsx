@@ -6,7 +6,7 @@ import HashLoader from "react-spinners/HashLoader"
 
 
 
-function PolygonMap({pos}) {
+function PolygonMap({pos, transport}) {
     const [loaded, setLoaded] = useState(false);
 
     const [nodes, setNodes] = useState([]);
@@ -21,7 +21,6 @@ function PolygonMap({pos}) {
     // getting data from api
     
     pos = pos[0];
-
     
     useEffect(() => {
         const fetchData = async () => {
@@ -35,6 +34,8 @@ function PolygonMap({pos}) {
         fetchData();
     }, [pos]);
 
+
+    
 
     // press on map
     const [positions, setPositions] = useState([]);
@@ -58,7 +59,6 @@ function PolygonMap({pos}) {
         )
     }
     const leafletpos = pos.map((el) => [el[1], el[0]]);
-    console.log('pos = ', leafletpos);
     return (
         <div className={styles.MapContainer}>
             <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={true}>

@@ -37,7 +37,6 @@ function ChooseForm() {
     const [selectedOption, setSelectedOption] = useState(options[0]);
     function onChangeHandler(selectedOption) {
         setSelectedOption(selectedOption);
-        console.log(`Selected: ${selectedOption.label}`)
     }
     if (selectedOption.label === "Rectangle") {
         return (

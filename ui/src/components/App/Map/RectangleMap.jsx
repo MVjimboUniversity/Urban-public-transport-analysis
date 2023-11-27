@@ -7,7 +7,7 @@ import { cityService } from "../../../services/city.service";
 import HashLoader from "react-spinners/HashLoader"
 
 
-function RectangleMap({pos}) {
+function RectangleMap({pos, transport}) {
     const [loaded, setLoaded] = useState(false);
 
     const [edges, setEdges] = useState([]);

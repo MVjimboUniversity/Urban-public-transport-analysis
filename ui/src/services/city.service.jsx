@@ -16,7 +16,7 @@ export const cityService = {
         const response = await axios.get(BASE_URL + `/TramNetwork/bbox?north=${bbox.north}&south=${bbox.south}&east=${bbox.east}&west=${bbox.west}`);
         return JSON.parse(response.data);
     },
-    //(37.558093;55.780142) (37.664573;55.724120) (37.584589;55.732905)
+    // (37.558093;55.780142) (37.664573;55.724120) (37.584589;55.732905)
     async getPolygon(polygon) {
         const response = await axios.post(BASE_URL + '/TramNetwork/polygon', polygon, {headers: {"Content-Type": "application/json"}, withCredentials: true});
         return JSON.parse(response.data);
