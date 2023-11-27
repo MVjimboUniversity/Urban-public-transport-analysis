@@ -1,10 +1,10 @@
 import json
 from typing import Annotated
-import osmnx as ox
+# import osmnx as ox
 from fastapi import APIRouter, Query, Body
 from shapely import Polygon
 
-import app.public_transport_osmnx.osmnx as ptox
+import app.public_transport_osmnx.osmnx as ox
 from app.database import driver, create_graph, get_graph, check_graph
 
 router = APIRouter(
@@ -19,7 +19,7 @@ async def network_by_name(city: Annotated[str, Query(description="Названи
     """
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
-    G, routes, stops, paths_routes = ptox.graph_from_place(city, simplify=True, retain_all=True, network_type="tram")
+    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     create_graph(driver, gdf_nodes, gdf_relationships)
     data = {
@@ -71,7 +71,7 @@ async def is_graph_exist():
     """
     Проверяет существует ли граф в базе данных.
     """
-    return {"is_graph_exist": check_graph(driver)}
+    return {"is_graph_exist": bool(check_graph(driver))}
 
 @router.get("/db")
 async def read_graph():
