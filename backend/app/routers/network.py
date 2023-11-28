@@ -1,6 +1,7 @@
 import json
 from typing import Annotated
 # import osmnx as ox
+import pandas as pd
 from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
 
@@ -40,9 +41,10 @@ async def network_by_name(
     boundaries = geocode_gdf["geometry"]
     G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
-    create_graph(driver, gdf_nodes, gdf_relationships)
+    df_center = geocode_gdf[["lat", "lon"]]
+    create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
-        "center": [geocode_gdf.loc[0, "lon"], geocode_gdf.loc[0, "lat"]],
+        "center": [ geocode_gdf.loc[0, "lon"], geocode_gdf.loc[0, "lat"]],
         "boundaries": json.loads(boundaries.to_json()),
         "nodes": json.loads(gdf_nodes.to_json()),
         "edges": json.loads(gdf_relationships.to_json()),
@@ -60,9 +62,10 @@ async def network_by_bbox(
     """
     Возвращает сеть трамвайных путей по ограниченой рамке.
     """
-    G = ox.graph_from_bbox(north, south, east, west, custom_filter='["railway"~"tram"]')
+    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
-    create_graph(driver, gdf_nodes, gdf_relationships)
+    df_center = pd.DataFrame(data = {"lon": (north + south) / 2, "lat": (east + west) / 2})
+    create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
         "center": [(north + south) / 2, (east + west) / 2],
         "nodes": json.loads(gdf_nodes.to_json()),
@@ -79,9 +82,11 @@ async def network_by_polygon(
     Возвращает сеть трамвайных путей по полигону.
     """
     polygon = Polygon(polygon)
-    G = ox.graph_from_polygon(polygon, custom_filter='["railway"~"tram"]')
+    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
-    create_graph(driver, gdf_nodes, gdf_relationships)
+    center = list(polygon.centroid.coords)
+    df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]})
+    create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
         "center": list(polygon.centroid.coords),
         "nodes": json.loads(gdf_nodes.to_json()),
@@ -101,8 +106,9 @@ async def read_graph():
     """
     Возвращает граф из базы данных.
     """
-    gdf_nodes, gdf_relationships = get_graph(driver)
+    df_center, gdf_nodes, gdf_relationships = get_graph(driver)
     data = {
+        "center": [ df_center.loc[0, "lon"], df_center.loc[0, "lat"]],
         "nodes": json.loads(gdf_nodes.to_json()),
         "edges": json.loads(gdf_relationships.to_json()),
     }
