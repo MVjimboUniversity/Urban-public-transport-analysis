@@ -1,7 +1,7 @@
 import json
 from typing import Annotated
 # import osmnx as ox
-from fastapi import APIRouter, Query, Body
+from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
 
 import app.public_transport_osmnx.osmnx as ox
@@ -12,8 +12,27 @@ router = APIRouter(
     tags=["Network"],
 )
 
+async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: bool = False):
+    result = []
+
+    if bus:
+        result.append("bus")
+
+    if tram:
+        result.append("tram")
+
+    if trolleybus:
+        result.append("trolleybus")
+
+    return result
+
+FilterParams = Annotated[dict, Depends(filter_parameters)]
+
 @router.get("/name")
-async def network_by_name(city: Annotated[str, Query(description="Название города.")]):
+async def network_by_name(
+    city: Annotated[str, Query(description="Название города.")],
+    filters: FilterParams
+):
     """
     Возвращает сеть трамвайных путей по названию.
     """
@@ -35,7 +54,8 @@ async def network_by_bbox(
     north: Annotated[float, Query(description="Северная широта ограничительной рамки.")],
     south: Annotated[float, Query(description="Южная широта ограничительной рамки.")],
     east: Annotated[float, Query(description="Восточная долгота ограничивающей рамки.")],
-    west: Annotated[float, Query(description="Западная долгота ограничивающей рамки.")]
+    west: Annotated[float, Query(description="Западная долгота ограничивающей рамки.")],
+    filters: FilterParams
 ):
     """
     Возвращает сеть трамвайных путей по ограниченой рамке.
@@ -53,6 +73,7 @@ async def network_by_bbox(
 @router.post("/polygon")
 async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
+    filters: FilterParams
 ):
     """
     Возвращает сеть трамвайных путей по полигону.
