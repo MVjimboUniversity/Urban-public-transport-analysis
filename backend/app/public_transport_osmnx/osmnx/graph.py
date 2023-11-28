@@ -93,7 +93,7 @@ def graph_from_bbox(
     polygon = utils_geo.bbox_to_poly(north, south, east, west)
 
     # create graph using this polygon geometry
-    G = graph_from_polygon(
+    G, routes, stops, paths_routes = graph_from_polygon(
         polygon,
         network_type=network_type,
         simplify=simplify,
@@ -104,7 +104,7 @@ def graph_from_bbox(
     )
 
     utils.log(f"graph_from_bbox returned graph with {len(G):,} nodes and {len(G.edges):,} edges")
-    return G
+    return G, routes, stops, paths_routes 
 
 
 def graph_from_point(
@@ -172,7 +172,7 @@ def graph_from_point(
     north, south, east, west = utils_geo.bbox_from_point(center_point, dist)
 
     # create a graph from the bounding box
-    G = graph_from_bbox(
+    G, routes, stops, paths_routes  = graph_from_bbox(
         north,
         south,
         east,
@@ -192,7 +192,7 @@ def graph_from_point(
         G = truncate.truncate_graph_dist(G, node, max_dist=dist)
 
     utils.log(f"graph_from_point returned graph with {len(G):,} nodes and {len(G.edges):,} edges")
-    return G
+    return G, routes, stops, paths_routes 
 
 
 def graph_from_address(
@@ -260,7 +260,7 @@ def graph_from_address(
     point = geocoder.geocode(query=address)
 
     # then create a graph from this point
-    G = graph_from_point(
+    G, routes, stops, paths_routes = graph_from_point(
         point,
         dist,
         dist_type,
@@ -277,7 +277,7 @@ def graph_from_address(
         return G, point
 
     # otherwise
-    return G
+    return G, routes, stops, paths_routes
 
 
 def graph_from_place(
@@ -491,9 +491,9 @@ def graph_from_polygon(
         # segments in the network, but in reality also connect to an
         # intersection just outside the polygon
         G, routes, stops = truncate.truncate_graph_polygon(G_buff, routes, stops, polygon, retain_all, truncate_by_edge)
-        
+   
         G = truncate.truncate_graph_stops(G, stops, retain_all)
-
+     
         # count how many physical streets in buffered graph connect to each
         # intersection in un-buffered graph, to retain true counts for each
         # intersection, even if some of its neighbors are outside the polygon
@@ -564,14 +564,14 @@ def graph_from_xml(filepath, bidirectional=False, simplify=True, retain_all=Fals
     response_jsons = [osm_xml._overpass_json_from_file(filepath)]
 
     # create graph using this response JSON
-    G = _create_graph(response_jsons, bidirectional=bidirectional, retain_all=retain_all)
+    G, routes, stops, paths_routes  = _create_graph(response_jsons, bidirectional=bidirectional, retain_all=retain_all)
 
     # simplify the graph topology as the last step
     if simplify:
         G = simplification.simplify_graph(G)
 
     utils.log(f"graph_from_xml returned graph with {len(G):,} nodes and {len(G.edges):,} edges")
-    return G
+    return G, routes, stops, paths_routes 
 
 
 def _create_graph(response_jsons, retain_all=False, bidirectional=False):
