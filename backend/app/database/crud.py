@@ -111,7 +111,7 @@ def get_data(tx, query):
     df = results.to_df()
     df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
     gdf = gpd.GeoDataFrame(df, geometry='geometry')
-    gdf = gdf.drop(columns=["geometry"])
+    gdf = gdf.drop(columns=["geometry_wkt"])
     return gdf
 
 def get_graph(driver):
@@ -130,15 +130,15 @@ COUNT_QUERY = """
 MATCH (n) RETURN COUNT(n) AS node_count
 """
 
-def is_clear(tx):
+def is_exist(tx):
     results = tx.run(COUNT_QUERY)
     df = results.to_df()
-    return df.loc[0, "node_count"] == 0
+    return df.loc[0, "node_count"] != 0
 
 def check_graph(driver):
     df = False
 
     with driver.session() as session:
-        df = session.execute_read(is_clear)
+        df = session.execute_read(is_exist)
     
     return df
