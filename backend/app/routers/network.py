@@ -42,6 +42,7 @@ async def network_by_bbox(
     """
     G = ox.graph_from_bbox(north, south, east, west, custom_filter='["railway"~"tram"]')
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
+    create_graph(driver, gdf_nodes, gdf_relationships)
     data = {
         "center": [(north + south) / 2, (east + west) / 2],
         "nodes": json.loads(gdf_nodes.to_json()),
@@ -59,6 +60,7 @@ async def network_by_polygon(
     polygon = Polygon(polygon)
     G = ox.graph_from_polygon(polygon, custom_filter='["railway"~"tram"]')
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
+    create_graph(driver, gdf_nodes, gdf_relationships)
     data = {
         "center": list(polygon.centroid.coords),
         "nodes": json.loads(gdf_nodes.to_json()),
