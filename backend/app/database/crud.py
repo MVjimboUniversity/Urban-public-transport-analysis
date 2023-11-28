@@ -1,18 +1,19 @@
 import geopandas as gpd
 
+
 # First, define Cypher queries to create constraints and indexes
 constraint_query = "CREATE CONSTRAINT IF NOT EXISTS FOR (i:Intersection) REQUIRE i.osmid IS UNIQUE"
 rel_index_query = "CREATE INDEX IF NOT EXISTS FOR ()-[r:ROAD_SEGMENT]-() ON r.osmids"
 address_constraint_query = "CREATE CONSTRAINT IF NOT EXISTS FOR (a:Address) REQUIRE a.id IS UNIQUE"
 point_index_query = "CREATE POINT INDEX IF NOT EXISTS FOR (i:Intersection) ON i.location"
 
+
 # Cypher query to import our road network nodes GeoDataFrame
-node_query = '''
+NODE_INSERT_QUERY = '''
     UNWIND $rows AS row
     WITH row WHERE row.osmid IS NOT NULL
     MERGE (s:Stop {osmid: row.osmid})
-        SET s.location = 
-         point({latitude: row.y, longitude: row.x }),
+        SET s.location = point({latitude: row.y, longitude: row.x }),
             s.name = row.name,
             s.highway = row.highway,
             s.public_transport = row.public_transport,
@@ -25,7 +26,7 @@ node_query = '''
     '''
 
 # Cypher query to import our road network relationships GeoDataFrame
-rels_query = '''
+RELS_INSERT_QUERY = '''
     UNWIND $rows AS path
     MATCH (u:Stop {osmid: path.u})
     MATCH (v:Stop {osmid: path.v})
@@ -39,6 +40,60 @@ rels_query = '''
             r.geometry_wkt = path.geometry_wkt,
             r.length = toFloat(path.length)
     RETURN COUNT(*) AS total
+    '''
+
+
+NODE_GET_QUERY = '''
+    MATCH (s:Stop) 
+    RETURN 
+    s.osmid AS osmid, 
+    s.location.longitude AS x, 
+    s.location.latitude AS y, 
+    s.name AS name, 
+    s.public_transport AS public_transport, 
+    s.tram AS tram, 
+    s.bus AS bus, 
+    s.routes AS routes, 
+    s.street_count AS street_count, 
+    s.geometry_wkt AS geometry_wkt
+    '''
+
+
+RELS_GET_QUERY = '''
+    MATCH (u:Stop)-[r:ROUTE_SEGMENT]->(v:Stop) 
+    RETURN
+    u.osmid AS u, 
+    v.osmid AS v, 
+    r.osmid AS osmid, 
+    r.name AS name, 
+    r.highway AS higway, 
+    r.lanes AS lanes, 
+    r.maxspeed AS maxspeed, 
+    r.railway AS railway, 
+    r.oneway AS oneway, 
+    r.reversed AS reversed, 
+    r.length AS length, 
+    r.geometry_wkt AS geometry_wkt
+    '''
+
+
+COUNT_QUERY = '''
+    MATCH (s: Stop) RETURN COUNT(s) AS node_count
+    '''
+
+
+CENTER_INSERT_QUERY = '''
+    UNWIND $rows AS row
+    MERGE (c:Center {location: point({latitude: row.lat, longitude: row.lon })})
+    RETURN COUNT(*) AS total
+    '''
+
+
+CENTER_GET_QUERY = '''
+    MATCH (c:Center)
+    RETURN
+    c.location.latitude AS lat,
+    c.location.longitude AS lon
     '''
 
 def create_constraints(tx):
@@ -58,7 +113,8 @@ def insert_data(tx, query, rows, batch_size=10000):
         total += results[0]['total']
         batch += 1
 
-def create_graph(driver, gdf_nodes, gdf_relationships):
+
+def create_graph(driver, df_center, gdf_nodes, gdf_relationships):
     # Changing GeoDataFrame to insert data
     gdf_nodes.reset_index(inplace=True)
     gdf_relationships.reset_index(inplace=True)
@@ -68,45 +124,15 @@ def create_graph(driver, gdf_nodes, gdf_relationships):
     # Run our constraints queries and nodes GeoDataFrame import
     with driver.session() as session:
         session.execute_write(create_constraints)
-        session.execute_write(insert_data, node_query, gdf_nodes.drop(columns=["geometry"]))
+        session.execute_write(insert_data, NODE_INSERT_QUERY, gdf_nodes.drop(columns=["geometry"]))
+        session.execute_write(insert_data, CENTER_INSERT_QUERY, df_center)
 
     # Run our relationships GeoDataFrame import
     with driver.session() as session:
-        session.execute_write(insert_data, rels_query, gdf_relationships.drop(columns=["geometry"]))
+        session.execute_write(insert_data, RELS_INSERT_QUERY, gdf_relationships.drop(columns=["geometry"]))
 
-node_get_query = '''
-MATCH (s:Stop) 
-RETURN 
-s.osmid AS osmid, 
-s.location.longitude AS x, 
-s.location.latitude AS y, 
-s.name AS name, 
-s.public_transport AS public_transport, 
-s.tram AS tram, 
-s.bus AS bus, 
-s.routes AS routes, 
-s.street_count AS street_count, 
-s.geometry_wkt AS geometry_wkt
-'''
 
-rels_get_query = '''
-MATCH (u:Stop)-[r:ROUTE_SEGMENT]->(v:Stop) 
-RETURN
-u.osmid AS u, 
-v.osmid AS v, 
-r.osmid AS osmid, 
-r.name AS name, 
-r.highway AS higway, 
-r.lanes AS lanes, 
-r.maxspeed AS maxspeed, 
-r.railway AS railway, 
-r.oneway AS oneway, 
-r.reversed AS reversed, 
-r.length AS length, 
-r.geometry_wkt AS geometry_wkt
-'''
-
-def get_data(tx, query):
+def get_geo_df(tx, query):
     results = tx.run(query)
     df = results.to_df()
     df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
@@ -114,31 +140,37 @@ def get_data(tx, query):
     gdf = gdf.drop(columns=["geometry_wkt"])
     return gdf
 
+
+def get_df(tx, query):
+    results = tx.run(query)
+    df = results.to_df()
+    return df
+
+
 def get_graph(driver):
     gdf_nodes = None
     gdf_relationships = None
+    df_center = None
 
     with driver.session() as session:
-        gdf_nodes = session.execute_read(get_data, node_get_query)
+        gdf_nodes = session.execute_read(get_geo_df, NODE_GET_QUERY)
+        df_center = session.execute_read(get_df, CENTER_GET_QUERY)
 
     with driver.session() as session:
-        gdf_relationships = session.execute_read(get_data, rels_get_query)
+        gdf_relationships = session.execute_read(get_geo_df, RELS_GET_QUERY)
     
-    return gdf_nodes, gdf_relationships
+    return df_center, gdf_nodes, gdf_relationships
 
-COUNT_QUERY = """
-MATCH (n) RETURN COUNT(n) AS node_count
-"""
 
 def is_exist(tx):
     results = tx.run(COUNT_QUERY)
     df = results.to_df()
     return df.loc[0, "node_count"] != 0
 
+
 def check_graph(driver):
     df = False
 
     with driver.session() as session:
         df = session.execute_read(is_exist)
-    
     return df
