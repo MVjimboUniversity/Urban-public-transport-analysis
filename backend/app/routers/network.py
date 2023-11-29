@@ -47,7 +47,7 @@ async def network_by_bbox(
     df_center = pd.DataFrame(data = {"lon": (east + west) / 2, "lat": (north + south) / 2}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
-        "center": [(north + south) / 2, (east + west) / 2],
+        "center": [(east + west) / 2, (north + south) / 2],
         "nodes": json.loads(gdf_nodes.to_json()),
         "edges": json.loads(gdf_relationships.to_json()),
     }
