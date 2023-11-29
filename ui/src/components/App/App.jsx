@@ -11,22 +11,19 @@ function App(props) {
 
     // getting data from previous page
     const location = useLocation();
-    //const type = location.state.type;
-    //const dataToApp = location.state.dataArr;
-    //const transport = location.state.transport;
-    const type = 'City';
-    const dataToApp = ['Москва'];
-    const transport = [];
+    const type = location.state.type;
+    const dataToApp = location.state.dataArr;
+    const transport = location.state.transport;
+
+
     // handle back button
     function buttonHandle() {
         // const clearGraph = async () => {
         //     const data = await cityService.clear();
-        //     console.log('clearGraph = ', clearGraph);
         // }
         // clearGraph();
         navigate('/');
     }
-    dataToApp[0] = "Москва";
     switch (type) {
         case "City":
             return (
@@ -78,9 +75,7 @@ function App(props) {
             return (
                 <PolygonMap pos={dataToApp} transport={transport}/>
             )
-        break;
         default:
-
             break;
     }
 }

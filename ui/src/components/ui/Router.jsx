@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "../../pages/Home";
 import App from "../App/App";
-import TestMagic from "../testMagic/testMagic"
+import ExistingPage from "../../pages/ExistingMap/ExistingPage";
 
 
 const Router = () => {
@@ -10,7 +10,7 @@ const Router = () => {
             <Routes>
                 <Route element={<Home/>} path='/'></Route>
                 <Route element={<App/>} path='/app'></Route>
-                <Route element={<TestMagic/>} path='/test'></Route>
+                <Route element={<ExistingPage/>} path='/existing-map'></Route>
             </Routes>
         </BrowserRouter>
     )
