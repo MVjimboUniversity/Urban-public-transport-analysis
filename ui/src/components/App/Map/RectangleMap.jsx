@@ -81,12 +81,12 @@ function RectangleMap({pos, transport}) {
                 </Marker>
                 <Rectangle bounds={rectangle} pathOptions={blackOptions}/>
                 <Polygon pathOptions={redOptions} positions={positions}></Polygon>
+                <Polyline positions={edges} pathOptions={limeOptions}></Polyline>
                 {
                     nodes.map((el) => (
                         <Circle key={el[2]} center={[el[0], el[1]]}></Circle>                        
                     ))
                 }
-                <Polyline positions={edges} pathOptions={limeOptions}></Polyline>
                 <LocationGetter/>
             </MapContainer>
             <button className={styles.btn} onClick={clear}>Очистить карту</button>

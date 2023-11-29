@@ -88,7 +88,7 @@ function PolygonForm() {
     }
     return (
         <form className={styles.form}>
-            <input placeholder="Polygon" onChange={e => setPolygon(e.target.value)} value={polygon}></input>
+            <input placeholder="(x;y) (x;y) ... (x;y)" onChange={e => setPolygon(e.target.value)} value={polygon}></input>
             <div className={styles.asd}>
                 <FormGroup className={styles.CheckboxForm}>   
                     <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Автобус</Typography>} 
