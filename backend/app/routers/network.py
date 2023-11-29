@@ -67,7 +67,7 @@ async def network_by_polygon(
     df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
-        "center": list(polygon.centroid.coords),
+        "center": [df_center.loc[0, "lon"], df_center.loc[0, "lat"]],
         "nodes": json.loads(gdf_nodes.to_json()),
         "edges": json.loads(gdf_relationships.to_json()),
     }
