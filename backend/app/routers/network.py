@@ -63,7 +63,7 @@ async def network_by_polygon(
     polygon = Polygon(polygon)
     G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
-    center = list(polygon.centroid.coords)
+    center = list(polygon.centroid.coords[0])
     df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
