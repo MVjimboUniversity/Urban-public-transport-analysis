@@ -44,7 +44,7 @@ async def network_by_bbox(
     """
     G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
-    df_center = pd.DataFrame(data = {"lon": (north + south) / 2, "lat": (east + west) / 2})
+    df_center = pd.DataFrame(data = {"lon": (east + west) / 2, "lat": (north + south) / 2}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
         "center": [(north + south) / 2, (east + west) / 2],
@@ -64,7 +64,7 @@ async def network_by_polygon(
     G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_type="tram")
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     center = list(polygon.centroid.coords)
-    df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]})
+    df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
         "center": list(polygon.centroid.coords),
