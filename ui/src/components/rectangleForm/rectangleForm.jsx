@@ -55,10 +55,10 @@ function RectangleForm() {
 
     return (
             <form className={styles.form}>
-                <input placeholder="Top" onChange={e => setTop(e.target.value)} value = {top}/>
-                <input placeholder="Bottom" onChange={e => setBottom(e.target.value)} value = {bottom}/>
-                <input placeholder="Left" onChange={e => setLeft(e.target.value)} value = {left}></input>
-                <input placeholder="Right" onChange={e => setRight(e.target.value)} value = {right}></input>
+                <input placeholder="North" onChange={e => setTop(e.target.value)} value = {top}/>
+                <input placeholder="South" onChange={e => setBottom(e.target.value)} value = {bottom}/>
+                <input placeholder="West" onChange={e => setLeft(e.target.value)} value = {left}></input>
+                <input placeholder="East" onChange={e => setRight(e.target.value)} value = {right}></input>
                 <div className={styles.asd}>
                     <FormGroup className={styles.CheckboxForm}>   
                         <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Автобус</Typography>} 
