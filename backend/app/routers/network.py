@@ -2,7 +2,7 @@ import json
 from typing import Annotated
 # import osmnx as ox
 import pandas as pd
-from fastapi import APIRouter, Query, Body
+from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
 
 import app.public_transport_osmnx.osmnx as ox
@@ -13,14 +13,33 @@ router = APIRouter(
     tags=["Network"],
 )
 
+async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: bool = False):
+    result = []
+
+    if bus:
+        result.append("bus")
+
+    if tram:
+        result.append("tram")
+
+    if trolleybus:
+        result.append("trolleybus")
+
+    return result
+
+FilterParams = Annotated[dict, Depends(filter_parameters)]
+
 @router.get("/name")
-async def network_by_name(city: Annotated[str, Query(description="Название города.")]):
+async def network_by_name(
+    city: Annotated[str, Query(description="Название города.")],
+    filters: FilterParams
+):
     """
     Возвращает сеть трамвайных путей по названию.
     """
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
-    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_type="tram")
+    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_type=filters)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = geocode_gdf[["lat", "lon"]]
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
@@ -37,12 +56,13 @@ async def network_by_bbox(
     north: Annotated[float, Query(description="Северная широта ограничительной рамки.")],
     south: Annotated[float, Query(description="Южная широта ограничительной рамки.")],
     east: Annotated[float, Query(description="Восточная долгота ограничивающей рамки.")],
-    west: Annotated[float, Query(description="Западная долгота ограничивающей рамки.")]
+    west: Annotated[float, Query(description="Западная долгота ограничивающей рамки.")],
+    filters: FilterParams
 ):
     """
     Возвращает сеть трамвайных путей по ограниченой рамке.
     """
-    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_type="tram")
+    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_type=filters)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = pd.DataFrame(data = {"lon": (east + west) / 2, "lat": (north + south) / 2}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
@@ -56,18 +76,19 @@ async def network_by_bbox(
 @router.post("/polygon")
 async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
+    filters: FilterParams
 ):
     """
     Возвращает сеть трамвайных путей по полигону.
     """
     polygon = Polygon(polygon)
-    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_type="tram")
+    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_type=filters)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     center = list(polygon.centroid.coords[0])
     df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
     data = {
-        "center": list(polygon.centroid.coords),
+        "center": [df_center.loc[0, "lon"], df_center.loc[0, "lat"]],
         "nodes": json.loads(gdf_nodes.to_json()),
         "edges": json.loads(gdf_relationships.to_json()),
     }
