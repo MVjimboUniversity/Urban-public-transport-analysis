@@ -39,7 +39,7 @@ async def network_by_name(
     """
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
-    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_type=filters)
+    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_types=filters)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = geocode_gdf[["lat", "lon"]]
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
@@ -62,7 +62,7 @@ async def network_by_bbox(
     """
     Возвращает сеть трамвайных путей по ограниченой рамке.
     """
-    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_type=filters)
+    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_types=filters)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = pd.DataFrame(data = {"lon": (east + west) / 2, "lat": (north + south) / 2}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
@@ -82,7 +82,7 @@ async def network_by_polygon(
     Возвращает сеть трамвайных путей по полигону.
     """
     polygon = Polygon(polygon)
-    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_type=filters)
+    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_types=filters)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     center = list(polygon.centroid.coords[0])
     df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]}, index=[0, ])

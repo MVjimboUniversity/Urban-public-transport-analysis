@@ -29,17 +29,17 @@ function CityMap({cityname, transport}) {
     function clear() {
         setPositions([]);
     }
-    
+    console.log('transport = ', transport);
     useEffect( () => {
         const fetchData = async () => {
-            const data = await cityService.getCity(cityname);
+            const data = await cityService.getCity(cityname, transport);
             setCenter([data.center[1], data.center[0]]);
             setEdges(data.edges.features.map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setNodes(data.nodes.features.map(item => [item.properties.y, item.properties.x, item.id]));
             setIsLoaded(true);
         }
         fetchData();
-    },  [isLoaded, cityname]);
+    },  [cityname, transport]);
     if (!isLoaded) {
         return (
             <div className={styles.MapContainer}>

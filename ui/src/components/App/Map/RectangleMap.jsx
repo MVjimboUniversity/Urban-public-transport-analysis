@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import styles from '../Map/Map.module.css'
 import { MapContainer, TileLayer, Polygon, useMapEvents, Circle, Polyline } from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
@@ -12,6 +12,7 @@ function RectangleMap({pos, transport}) {
 
     const [edges, setEdges] = useState([]);
     const [nodes, setNodes] = useState([]);
+    const [center, setCenter] = useState([]);
     //const [center, setCenter] = useState([]);
 
     // map settings
@@ -19,35 +20,21 @@ function RectangleMap({pos, transport}) {
     const redOptions = { color: 'red' };
     const limeOptions = { color: 'lime' };
 
-    const rectangle = [
-        [parseFloat(pos[0]), parseFloat(pos[2])],
-        [parseFloat(pos[1]), parseFloat(pos[3])]
-    ];
-
     // getting data from api
     
-    let bbox = useMemo(() => [], []);
-    bbox = {
-        north: rectangle[0][0],
-        south: rectangle[1][0],
-        east: rectangle[0][1],
-        west: rectangle[1][1],
-    };
-
     useEffect(() => {
         const fetchData = async () => {
-            const data = await cityService.getBbox(bbox);
+            const data = await cityService.getBbox(pos, transport);
             //setCenter([data.center[1], data.center[0]]);
             setEdges(data.edges.features.map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setNodes(data.nodes.features.map(item => [item.properties.y, item.properties.x, item.id]));
+            setCenter([data.center[1], data.center[0]]);
             setLoaded(true);
         }
         fetchData();
-    }, [bbox]);
+    }, [pos, transport]);
 
-    const Center = [(rectangle[0][0] + rectangle[1][0]) / 2 , (rectangle[0][1] + rectangle[1][1]) / 2];
-
-
+    
     // press on map
     const [positions, setPositions] = useState([]);
     function LocationGetter() {
@@ -59,6 +46,8 @@ function RectangleMap({pos, transport}) {
         return null;
     }
 
+    const rectangle = [[pos.north, pos.west], [pos.south, pos.east]];
+    
     function clear() {
         setPositions([]);
     }
@@ -71,12 +60,12 @@ function RectangleMap({pos, transport}) {
     }
     return (
         <div className={styles.MapContainer}>
-            <MapContainer className={styles.Map} center={Center} zoom={13} scrollWheelZoom={false}>
+            <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={false}>
                 <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <Marker position={Center}>
+                <Marker position={center}>
                     <Popup>Центр города</Popup>
                 </Marker>
                 <Rectangle bounds={rectangle} pathOptions={blackOptions}/>

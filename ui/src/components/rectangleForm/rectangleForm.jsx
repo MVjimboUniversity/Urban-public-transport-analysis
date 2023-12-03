@@ -27,7 +27,7 @@ function RectangleForm() {
     
     const navigate = useNavigate();
     // data to be sent
-    let dataToApp = {type : "Rectangle", dataArr: [], transport: {autobus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
+    let dataToApp = {type : "Rectangle", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
 
     // validating data
     async function validateForm() {
@@ -44,11 +44,15 @@ function RectangleForm() {
             alert("Заполните все поля числами!")
         }
         else {
-            dataToApp.dataArr = [];
-            dataToApp.dataArr.push(top);
-            dataToApp.dataArr.push(bottom);
-            dataToApp.dataArr.push(left);
-            dataToApp.dataArr.push(right);
+            dataToApp.dataArr = [{}];
+            dataToApp.dataArr[0].north = top;
+            dataToApp.dataArr[0].south = bottom;
+            dataToApp.dataArr[0].west = left;
+            dataToApp.dataArr[0].east = right;
+            console.log(`dataToApp.dataArr = ${dataToApp.dataArr}`);
+            dataToApp.transport.bus = autobusSelected;
+            dataToApp.transport.tram = tramSelected;
+            dataToApp.transport.trolleybus = trolleybusSelected;
             navigate('/app', {state: dataToApp});
         }
     }

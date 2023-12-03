@@ -57,7 +57,7 @@ function PolygonForm() {
 
     const navigate = useNavigate()
 
-    let dataToApp = {type : "Polygon", dataArr: [], transport: {autobus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
+    let dataToApp = {type : "Polygon", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
 
     async function validateForm() {
         let dataObject = {
@@ -79,7 +79,7 @@ function PolygonForm() {
             else {
                 dataToApp.dataArr = [];
                 dataToApp.dataArr.push(data);
-                dataToApp.transport.autobus = autobusSelected;
+                dataToApp.transport.bus = autobusSelected;
                 dataToApp.transport.trolleybus = trolleybusSelected;
                 dataToApp.transport.tram = tramSelected;
                 navigate('/app', {state: dataToApp});

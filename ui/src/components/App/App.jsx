@@ -55,12 +55,8 @@ function App(props) {
                 <PolygonMap pos={dataToApp} transport={transport}/>
         </div>)
         case "Rectangle":
-            let rectanglePos = [];
-            let output = '';
-            for (let i = 0; i < 4; ++i) {
-                output += dataToApp[i] + ' ';
-                rectanglePos.push(dataToApp[i]);
-            }
+            let rectanglePos = dataToApp[0];
+            let output = `north = ${dataToApp.north}, south = ${dataToApp.south}, west = ${dataToApp.west}, east = ${dataToApp.east}`;
             return (
                 <div className={styles.App}>
                     <div className={styles.head}>

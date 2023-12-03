@@ -24,15 +24,15 @@ function PolygonMap({pos, transport}) {
     
     useEffect(() => {
         const fetchData = async () => {
-            const data = await cityService.getPolygon(JSON.stringify(pos));
+            const data = await cityService.getPolygon(JSON.stringify(pos), transport);
             console.log(data);
             setEdges(data.edges.features.map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setNodes(data.nodes.features.map(item => [item.properties.y, item.properties.x, item.id]));
-            setCenter([data.center[0][1], data.center[0][0]]);
+            setCenter([data.center[1], data.center[0]]);
             setLoaded(true);
         };
         fetchData();
-    }, [pos]);
+    }, [pos, transport]);
 
 
     

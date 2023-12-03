@@ -12,7 +12,7 @@ function CityForm() {
     const [trolleybusSelected, setTrolleybusSelected] = useState(false);
 
     // passing data to new page
-    let dataToApp = {type : "City", dataArr: [], transport: {autobus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
+    let dataToApp = {type : "City", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
 
     const navigate = useNavigate();
 
@@ -23,9 +23,9 @@ function CityForm() {
         }
         else {
             dataToApp.dataArr.push(city);
-            dataToApp.autobus = autobusSelected;
-            dataToApp.trolleybus = trolleybusSelected;
-            dataToApp.tram = tramSelected;
+            dataToApp.transport.bus = autobusSelected;
+            dataToApp.transport.trolleybus = trolleybusSelected;
+            dataToApp.transport.tram = tramSelected;
             navigate('/app', {state: dataToApp})
         }
     }
