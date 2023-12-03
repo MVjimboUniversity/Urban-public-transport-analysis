@@ -99,11 +99,13 @@ def _get_osm_filter(network_type):
     
     filters["all"] = ('["route"~"bus|trolleybus|tram|subway"]["tourism"!="yes"]')
     
-    filters["bus"] = ('["route"~"bus|trolleybus"]["tourism"!="yes"]')
+    filters["bus"] = ('["route"="bus"]["tourism"!="yes"]')
     
-    filters["tram"] = ('["route"~"tram"]["tourism"!="yes"]')
+    filters["trolleybus"] = ('["route"="trolleybus"]["tourism"!="yes"]')
     
-    filters["subway"] = ('["route"~"subway"]["tourism"!="yes"]')
+    filters["tram"] = ('["route"="tram"]["tourism"!="yes"]')
+    
+    filters["subway"] = ('["route"="subway"]["tourism"!="yes"]')
 
     if network_type in filters:
         osm_filter = filters[network_type]
