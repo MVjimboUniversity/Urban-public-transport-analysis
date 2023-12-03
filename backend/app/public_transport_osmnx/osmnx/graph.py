@@ -37,7 +37,7 @@ def graph_from_bbox(
     south,
     east,
     west,
-    network_type="all_private",
+    network_types=["bus"],
     simplify=True,
     retain_all=False,
     truncate_by_edge=False,
@@ -95,7 +95,7 @@ def graph_from_bbox(
     # create graph using this polygon geometry
     G, routes, stops, paths_routes = graph_from_polygon(
         polygon,
-        network_type=network_type,
+        network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
         truncate_by_edge=truncate_by_edge,
@@ -111,7 +111,7 @@ def graph_from_point(
     center_point,
     dist=1000,
     dist_type="bbox",
-    network_type="all_private",
+    network_types=["bus"],
     simplify=True,
     retain_all=False,
     truncate_by_edge=False,
@@ -177,7 +177,7 @@ def graph_from_point(
         south,
         east,
         west,
-        network_type=network_type,
+        network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
         truncate_by_edge=truncate_by_edge,
@@ -199,7 +199,7 @@ def graph_from_address(
     address,
     dist=1000,
     dist_type="bbox",
-    network_type="all_private",
+    network_types=["bus"],
     simplify=True,
     retain_all=False,
     truncate_by_edge=False,
@@ -264,7 +264,7 @@ def graph_from_address(
         point,
         dist,
         dist_type,
-        network_type=network_type,
+        network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
         truncate_by_edge=truncate_by_edge,
@@ -282,7 +282,7 @@ def graph_from_address(
 
 def graph_from_place(
     query,
-    network_type="all_private",
+    network_types=["bus"],
     simplify=True,
     retain_all=False,
     truncate_by_edge=False,
@@ -375,7 +375,7 @@ def graph_from_place(
     # create graph using this polygon(s) geometry
     G, routes, stops, paths_routes = graph_from_polygon(
         polygon,
-        network_type=network_type,
+        network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
         truncate_by_edge=truncate_by_edge,
@@ -389,7 +389,7 @@ def graph_from_place(
 
 def graph_from_polygon(
     polygon,
-    network_type="all_private",
+    network_types=["bus"],
     simplify=True,
     retain_all=False,
     truncate_by_edge=False,
@@ -408,7 +408,7 @@ def graph_from_polygon(
     polygon : shapely.geometry.Polygon or shapely.geometry.MultiPolygon
         the shape to get network data within. coordinates should be in
         unprojected latitude-longitude degrees (EPSG:4326).
-    network_type : string {"all_private", "all", "bike", "drive", "drive_service", "walk"}
+    network_types : string {"all_private", "all", "bike", "drive", "drive_service", "walk"}
         what type of street network to get if custom_filter is None
     simplify : bool
         if True, simplify graph topology with the `simplify_graph` function
@@ -458,81 +458,95 @@ def graph_from_polygon(
             "a Point. See OSMnx documentation for details."
         )
         raise TypeError(msg)
+    
+    Graphs = []
+    all_routes = {}
+    all_stops = {}
+    all_paths_routes = {}    
+    
+    for network_type in network_types:
 
-    if clean_periphery:
-        # create a new buffered polygon 0.5km around the desired one
-        buffer_dist = 500
-        poly_proj, crs_utm = projection.project_geometry(polygon)
-        poly_proj_buff = poly_proj.buffer(buffer_dist)
-        poly_buff, _ = projection.project_geometry(poly_proj_buff, crs=crs_utm, to_latlong=True)
+        if clean_periphery:
+            # create a new buffered polygon 0.5km around the desired one
+            buffer_dist = 500
+            poly_proj, crs_utm = projection.project_geometry(polygon)
+            poly_proj_buff = poly_proj.buffer(buffer_dist)
+            poly_buff, _ = projection.project_geometry(poly_proj_buff, crs=crs_utm, to_latlong=True)
 
-        # download the network data from OSM within buffered polygon
-        response_jsons = _overpass._download_overpass_network(
-            poly_buff, network_type, custom_filter
-        )
+            # download the network data from OSM within buffered polygon
+            response_jsons = _overpass._download_overpass_network(
+                poly_buff, network_type, custom_filter
+            )
 
-        # create buffered graph from the downloaded data
-        bidirectional = network_type in settings.bidirectional_network_types
-        G_buff, routes, stops, paths_routes = _create_graph(response_jsons, retain_all=True, bidirectional=bidirectional)
+            # create buffered graph from the downloaded data
+            bidirectional = network_type in settings.bidirectional_network_types
+            G_buff, routes, stops, paths_routes = _create_graph(response_jsons, retain_all=True, bidirectional=bidirectional)
 
-        # truncate buffered graph to the buffered polygon and retain_all for
-        # now. needed because overpass returns entire ways that also include
-        # nodes outside the poly if the way (that is, a way with a single OSM
-        # ID) has a node inside the poly at some point.
-        G_buff, routes, stops = truncate.truncate_graph_polygon(G_buff, routes, stops, poly_buff, True, truncate_by_edge)
-
-        # simplify the graph topology
-        if simplify:
-            G_buff = simplification.simplify_graph(G_buff, stops, paths_routes)
-
-        # truncate graph by original polygon to return graph within polygon
-        # caller wants. don't simplify again: this allows us to retain
-        # intersections along the street that may now only connect 2 street
-        # segments in the network, but in reality also connect to an
-        # intersection just outside the polygon
-        G, routes, stops = truncate.truncate_graph_polygon(G_buff, routes, stops, polygon, retain_all, truncate_by_edge)
-   
-        G = truncate.truncate_graph_stops(G, stops, retain_all)
-     
-        # count how many physical streets in buffered graph connect to each
-        # intersection in un-buffered graph, to retain true counts for each
-        # intersection, even if some of its neighbors are outside the polygon
-        spn = stats.count_streets_per_node(G_buff, nodes=G.nodes)
-        nx.set_node_attributes(G, values=spn, name="street_count")
-
-    # if clean_periphery=False, just use the polygon as provided
-    else:
-        # download the network data from OSM
-        response_jsons = _overpass._download_overpass_network(polygon, network_type, custom_filter)
-
-        # create graph from the downloaded data
-        bidirectional = network_type in settings.bidirectional_network_types
-        G, routes, stops, paths_routes = _create_graph(response_jsons, retain_all=True, bidirectional=bidirectional)
-
-        # truncate the graph to the extent of the polygon
-        G, routes, stops = truncate.truncate_graph_polygon(G, polygon, retain_all, truncate_by_edgetruncate_stops_routes=True)
-
-        # simplify the graph topology after truncation. don't truncate after
-        # simplifying or you may have simplified out to an endpoint beyond the
-        # truncation distance, which would strip out the entire edge
-        if simplify:
-            G = simplification.simplify_graph(G, stops, paths_routes)
+            # truncate buffered graph to the buffered polygon and retain_all for
+            # now. needed because overpass returns entire ways that also include
+            # nodes outside the poly if the way (that is, a way with a single OSM
+            # ID) has a node inside the poly at some point.
+            G_buff, routes, stops = truncate.truncate_graph_polygon(G_buff, routes, stops, poly_buff, True, truncate_by_edge)
             
-        G = truncate.truncate_graph_stops(G, stops, retain_all)
+            # simplify the graph topology
+            if simplify:
+                G_buff = simplification.simplify_graph(G_buff, stops, paths_routes)
 
-        # count how many physical streets connect to each intersection/deadend
-        # note this will be somewhat inaccurate due to periphery effects, so
-        # it's best to parameterize function with clean_periphery=True
-        spn = stats.count_streets_per_node(G)
-        nx.set_node_attributes(G, values=spn, name="street_count")
-        warn(
-            "the graph-level street_count attribute will likely be inaccurate "
-            "when you set clean_periphery=False",
-            stacklevel=2,
-        )
+            # truncate graph by original polygon to return graph within polygon
+            # caller wants. don't simplify again: this allows us to retain
+            # intersections along the street that may now only connect 2 street
+            # segments in the network, but in reality also connect to an
+            # intersection just outside the polygon
+            
+            G, routes, stops = truncate.truncate_graph_polygon(G_buff, routes, stops, polygon, retain_all, truncate_by_edge)
+                    
+            G = truncate.truncate_graph_stops(G, stops, retain_all)
+            
+            # count how many physical streets in buffered graph connect to each
+            # intersection in un-buffered graph, to retain true counts for each
+            # intersection, even if some of its neighbors are outside the polygon
+            spn = stats.count_streets_per_node(G_buff, nodes=G.nodes)
+            nx.set_node_attributes(G, values=spn, name="street_count")
 
+        # if clean_periphery=False, just use the polygon as provided
+        else:
+            # download the network data from OSM
+            response_jsons = _overpass._download_overpass_network(polygon, network_type, custom_filter)
+
+            # create graph from the downloaded data
+            bidirectional = network_type in settings.bidirectional_network_types
+            G, routes, stops, paths_routes = _create_graph(response_jsons, retain_all=True, bidirectional=bidirectional)
+
+            # truncate the graph to the extent of the polygon
+            G, routes, stops = truncate.truncate_graph_polygon(G, polygon, retain_all, truncate_by_edgetruncate_stops_routes=True)
+
+            # simplify the graph topology after truncation. don't truncate after
+            # simplifying or you may have simplified out to an endpoint beyond the
+            # truncation distance, which would strip out the entire edge
+            if simplify:
+                G = simplification.simplify_graph(G, stops, paths_routes)
+                
+            G = truncate.truncate_graph_stops(G, stops, retain_all)
+
+            # count how many physical streets connect to each intersection/deadend
+            # note this will be somewhat inaccurate due to periphery effects, so
+            # it's best to parameterize function with clean_periphery=True
+            spn = stats.count_streets_per_node(G)
+            nx.set_node_attributes(G, values=spn, name="street_count")
+            warn(
+                "the graph-level street_count attribute will likely be inaccurate "
+                "when you set clean_periphery=False",
+                stacklevel=2,
+            )
+            
+        Graphs.append(G)
+        all_routes = all_routes | routes
+        all_stops = _union_dicts(all_stops, stops)
+        all_paths_routes = _union_dicts(all_paths_routes, paths_routes)
+
+    G = nx.compose_all(Graphs)
     utils.log(f"graph_from_polygon returned graph with {len(G):,} nodes and {len(G.edges):,} edges")
-    return G, routes, stops, paths_routes
+    return G, all_routes, all_stops, all_paths_routes
 
 
 def graph_from_xml(filepath, bidirectional=False, simplify=True, retain_all=False):
@@ -572,6 +586,15 @@ def graph_from_xml(filepath, bidirectional=False, simplify=True, retain_all=Fals
 
     utils.log(f"graph_from_xml returned graph with {len(G):,} nodes and {len(G.edges):,} edges")
     return G, routes, stops, paths_routes 
+
+
+def _union_dicts(base_dict, dict_to_add):
+    for k, v in dict_to_add.items():
+        if k in base_dict:
+            base_dict[k] |= (v)
+        else:
+            base_dict[k] = v
+    return base_dict
 
 
 def _create_graph(response_jsons, retain_all=False, bidirectional=False):
