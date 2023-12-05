@@ -174,3 +174,16 @@ def check_graph(driver):
     with driver.session() as session:
         df = session.execute_read(is_exist)
     return df
+
+
+DELETE_QUERY = '''
+MATCH (n)
+WITH n LIMIT 10000
+DETACH DELETE n
+RETURN count(*);
+'''
+
+def remove_graph(driver):
+    with driver.session() as session:
+        result = session.run(DELETE_QUERY)
+        # df = result.to_df()
