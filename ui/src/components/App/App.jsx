@@ -4,6 +4,7 @@ import styles from './App.module.css'
 import CityMap from './Map/CityMap';
 import RectangleMap from './Map/RectangleMap';
 import PolygonMap from './Map/PolygonMap';
+import { cityService } from '../../services/city.service';
 
 
 function App(props) {
@@ -18,10 +19,13 @@ function App(props) {
 
     // handle back button
     function buttonHandle() {
-        // const clearGraph = async () => {
-        //     const data = await cityService.clear();
-        // }
-        // clearGraph();
+        const clearGraph = async () => {
+            const data = await cityService.deleteGraph();
+            if (data) {
+                console.log(data.detail);
+            }
+        }
+        clearGraph();
         navigate('/');
     }
     switch (type) {
