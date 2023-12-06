@@ -1,2 +1,2 @@
 from .database import driver
-from .crud import create_graph, get_graph, check_graph
+from .crud import create_graph, get_graph, check_graph, remove_graph

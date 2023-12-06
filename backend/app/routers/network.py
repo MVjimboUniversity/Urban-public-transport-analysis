@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
 
 import app.public_transport_osmnx.osmnx as ox
-from app.database import driver, create_graph, get_graph, check_graph
+from app.database import driver, create_graph, get_graph, check_graph, remove_graph
 
 router = APIRouter(
     prefix="/network",
@@ -28,6 +28,7 @@ async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: b
     return result
 
 FilterParams = Annotated[dict, Depends(filter_parameters)]
+
 
 @router.get("/name")
 async def network_by_name(
@@ -51,6 +52,7 @@ async def network_by_name(
     }
     return json.dumps(data)
 
+
 @router.get("/bbox")
 async def network_by_bbox(
     north: Annotated[float, Query(description="Северная широта ограничительной рамки.")],
@@ -73,6 +75,7 @@ async def network_by_bbox(
     }
     return json.dumps(data)
 
+
 @router.post("/polygon")
 async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
@@ -94,12 +97,14 @@ async def network_by_polygon(
     }
     return json.dumps(data)
 
+
 @router.get("/db/check")
 async def is_graph_exist():
     """
     Проверяет существует ли граф в базе данных.
     """
     return {"is_graph_exist": bool(check_graph(driver))}
+
 
 @router.get("/db")
 async def read_graph():
@@ -113,3 +118,11 @@ async def read_graph():
         "edges": json.loads(gdf_relationships.to_json()),
     }
     return json.dumps(data)
+
+
+@router.get("/db/delete")
+async def delete_graph():
+    """
+    Удаляет граф из базы данных.
+    """
+    remove_graph(driver)
