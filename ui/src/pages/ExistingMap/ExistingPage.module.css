@@ -21,7 +21,10 @@
 }
 
 .back {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
     position: absolute;
     margin-top: 10px;
     margin-left: 10px;
