@@ -1,25 +1,38 @@
 import React from 'react'
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import styles from './App.module.css'
 import CityMap from './Map/CityMap';
 import RectangleMap from './Map/RectangleMap';
-import { Link } from 'react-router-dom';
 import PolygonMap from './Map/PolygonMap';
 
 
 function App(props) {
-    const location = useLocation()
+    const navigate = useNavigate();
+
+    // getting data from previous page
+    const location = useLocation();
     const type = location.state.type;
     const dataToApp = location.state.dataArr;
+    const transport = location.state.transport;
+
+
+    // handle back button
+    function buttonHandle() {
+        // const clearGraph = async () => {
+        //     const data = await cityService.clear();
+        // }
+        // clearGraph();
+        navigate('/');
+    }
     switch (type) {
         case "City":
             return (
                 <div className={styles.App}>       
-                    <Link className={styles.back} to={`/`}> Назад </Link>
+                    <button className={styles.back} onClick={buttonHandle}> Назад </button>
                     <p>Данные с предыдущей страницы</p>
                     <p>Тип предыдущей формы: {type}</p>
                     <p>Получены данные: {dataToApp[0]} </p>
-                    <CityMap className={styles.Map} cityname={dataToApp[0]}></CityMap>
+                    <CityMap className={styles.Map} cityname={dataToApp[0]} transport={transport}></CityMap>
                 </div>)
         case "Polygon":
             let polygonPos = [];
@@ -32,28 +45,32 @@ function App(props) {
                 polygonOutput += ' '
             }
             return (
-                <div className={styles.App}>       
-                <Link className={styles.back} to={`/`}> Назад </Link>
-                <p>Данные с предыдущей страницы</p>
-                <p>Тип предыдущей формы: {type}</p>
-                <p>Получены данные:<br/> {polygonOutput}</p>
-                <PolygonMap pos={dataToApp}/>
+                <div className={styles.App}>
+                    <div className={styles.head}>
+                    <button className={styles.back} onClick={buttonHandle}> Назад </button>
+                        <p>Данные с предыдущей страницы</p>
+                        <p>Тип предыдущей формы: {type}</p>
+                        <p>Получены данные:<br/> {polygonOutput}</p>
+                    </div>       
+                <PolygonMap pos={dataToApp} transport={transport}/>
         </div>)
         case "Rectangle":
-            let rectanglePos = [];
-            let output = '';
-            for (let i = 0; i < 4; ++i) {
-                output += dataToApp[i] + ' ';
-                rectanglePos.push(dataToApp[i]);
-            }
+            let rectanglePos = dataToApp[0];
+            let output = `north = ${dataToApp.north}, south = ${dataToApp.south}, west = ${dataToApp.west}, east = ${dataToApp.east}`;
             return (
-                <div className={styles.App}>   
-                <Link className={styles.back} to={`/`}> Назад </Link>
-                <p>Данные с предыдущей страницы</p>
-                <p>Тип предыдущей формы: { type }</p>
-                <p>Получены данные: { output }</p>
-                <RectangleMap pos={rectanglePos}></RectangleMap>
-        </div>)
+                <div className={styles.App}>
+                    <div className={styles.head}>
+                        <button className={styles.back} onClick={buttonHandle}> Назад </button>
+                        <p>Данные с предыдущей страницы</p>
+                        <p>Тип предыдущей формы: {type}</p>
+                        <p>Получены данные:<br/> {output}</p>
+                    </div>       
+                <RectangleMap pos={rectanglePos} transport={transport}/>
+        </div>);
+        case 'exists':
+            return (
+                <PolygonMap pos={dataToApp} transport={transport}/>
+            )
         default:
             break;
     }

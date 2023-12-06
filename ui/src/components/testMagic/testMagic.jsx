@@ -13,10 +13,12 @@ function TestMagic() {
 
     return (
         <div className={styles.App}>
-            <Link className={styles.back} to={`/`}> Назад </Link>
-            <p>Пробная отрисовка </p>
-            <p>Данные:</p>
-            <p>Трамвайный граф города Санкт-Петербург</p>
+            <div className={styles.head}>
+                <Link className={styles.back} to={`/`}> Назад </Link>
+                <p>Пробная отрисовка </p>
+                <p>Данные:</p>
+                <p>Трамвайный граф города Санкт-Петербург</p>
+            </div>
             <div className={styles.map}>
                 <MapContainer className={styles.MapContainer} center={[59.920505, 30.343228]} zoom={13} scrollWheelZoom={false}>
                 <TileLayer

@@ -6,7 +6,7 @@ import HashLoader from "react-spinners/HashLoader"
 
 
 
-function PolygonMap({pos, transport}) {
+function ExistingMap() {
     const [loaded, setLoaded] = useState(false);
 
     const [nodes, setNodes] = useState([]);
@@ -14,28 +14,23 @@ function PolygonMap({pos, transport}) {
     const [center, setCenter] = useState([]);
 
     // map settings
-    const blackOptions = { color: 'black' };
     const redOptions = { color: 'red' };
     const limeOptions = { color: 'lime' };
 
     // getting data from api
     
-    pos = pos[0];
     
     useEffect(() => {
         const fetchData = async () => {
-            const data = await cityService.getPolygon(JSON.stringify(pos), transport);
-            console.log(data);
+            const data = await cityService.getDb();
             setEdges(data.edges.features.map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setNodes(data.nodes.features.map(item => [item.properties.y, item.properties.x, item.id]));
             setCenter([data.center[1], data.center[0]]);
             setLoaded(true);
         };
         fetchData();
-    }, [pos, transport]);
+    }, []);
 
-
-    
 
     // press on map
     const [positions, setPositions] = useState([]);
@@ -58,10 +53,10 @@ function PolygonMap({pos, transport}) {
             </div>
         )
     }
-    const leafletpos = pos.map((el) => [el[1], el[0]]);
+
     return (
         <div className={styles.MapContainer}>
-            <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={true}>
+            <MapContainer className={styles.Map} center={[nodes[0][0],nodes[0][1]]} zoom={13} scrollWheelZoom={true}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -71,7 +66,6 @@ function PolygonMap({pos, transport}) {
                     Центр города.
                     </Popup>
                  </Marker>
-                <Polygon positions={leafletpos} pathOptions={blackOptions}/>
                 <LocationGetter/>
                 <Polygon pathOptions={redOptions} positions={positions}></Polygon>
                 <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
@@ -85,4 +79,4 @@ function PolygonMap({pos, transport}) {
 }
 
 
-export default PolygonMap
+export default ExistingMap
