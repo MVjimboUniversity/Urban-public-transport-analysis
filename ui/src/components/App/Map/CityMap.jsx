@@ -26,9 +26,31 @@ function CityMap({cityname, transport}) {
         return null;
     }
 
+    // button handling
     function clear() {
         setPositions([]);
     }
+
+    function saveNodes() {
+        const nodesData = JSON.stringify(nodes.map((el) => [el[0], el[1]]));
+        const blob = new Blob([nodesData], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); 
+        link.download = "nodes.json";
+        link.href = url;
+        link.click();  
+    }
+
+    function saveEdges() {
+        const edgesData = JSON.stringify(edges);
+        const blob = new Blob([edgesData], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); 
+        link.download = "edges.json";
+        link.href = url;
+        link.click();  
+    }
+
     console.log('transport = ', transport);
     useEffect( () => {
         const fetchData = async () => {
@@ -69,6 +91,8 @@ function CityMap({cityname, transport}) {
                 <Polygon pathOptions={redOptions} positions={positions}></Polygon>
             </MapContainer>
             <button className={styles.btn} onClick={clear}>Очистить карту</button>
+            <button className={styles.btn} onClick={saveNodes}>Сохранить узлы</button>
+            <button className={styles.btn} onClick={saveEdges}>Сохранить рёбра</button>
         </div>
   )
 }
