@@ -82,13 +82,13 @@ function CityMap({cityname, transport}) {
                     </Popup>
                 </Marker>
                 <LocationGetter/>
+                <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
+                <Polygon pathOptions={redOptions} positions={positions}></Polygon>
                 {(nodes.map((el) =>
                     (
                         <Circle key={el[2]} center={[el[0], el[1]]} radius={10}></Circle>
                     )
                 ))}
-                <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
-                <Polygon pathOptions={redOptions} positions={positions}></Polygon>
             </MapContainer>
             <button className={styles.btn} onClick={clear}>Очистить карту</button>
             <button className={styles.btn} onClick={saveNodes}>Сохранить узлы</button>

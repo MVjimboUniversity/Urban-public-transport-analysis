@@ -60,7 +60,7 @@ function App(props) {
         </div>)
         case "Rectangle":
             let rectanglePos = dataToApp[0];
-            let output = `north = ${dataToApp.north}, south = ${dataToApp.south}, west = ${dataToApp.west}, east = ${dataToApp.east}`;
+            let output = `north = ${dataToApp[0].north}, south = ${dataToApp[0].south}, west = ${dataToApp[0].west}, east = ${dataToApp[0].east}`;
             return (
                 <div className={styles.App}>
                     <div className={styles.head}>
