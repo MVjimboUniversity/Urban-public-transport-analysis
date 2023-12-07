@@ -48,9 +48,31 @@ function RectangleMap({pos, transport}) {
 
     const rectangle = [[pos.north, pos.west], [pos.south, pos.east]];
     
+    // button handling
     function clear() {
         setPositions([]);
     }
+
+    function saveNodes() {
+        const nodesData = JSON.stringify(nodes.map((el) => [el[0], el[1]]));
+        const blob = new Blob([nodesData], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); 
+        link.download = "nodes.json";
+        link.href = url;
+        link.click();  
+    }
+
+    function saveEdges() {
+        const edgesData = JSON.stringify(edges);
+        const blob = new Blob([edgesData], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); 
+        link.download = "edges.json";
+        link.href = url;
+        link.click();  
+    }
+
     if (!loaded) {
         return (
             <div className={styles.MapContainer}>
@@ -79,6 +101,8 @@ function RectangleMap({pos, transport}) {
                 <LocationGetter/>
             </MapContainer>
             <button className={styles.btn} onClick={clear}>Очистить карту</button>
+            <button className={styles.btn} onClick={saveNodes}>Сохранить узлы</button>
+            <button className={styles.btn} onClick={saveEdges}>Сохранить рёбра</button>
         </div>
       )
 }   
