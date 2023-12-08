@@ -9,14 +9,17 @@ import HashLoader from "react-spinners/HashLoader"
 function PolygonMap({pos, transport}) {
     const [loaded, setLoaded] = useState(false);
 
-    const [nodes, setNodes] = useState([]);
-    const [edges, setEdges] = useState([]);
-    const [center, setCenter] = useState([]);
+    const tramEdgesOptions = { color: 'red' };
+    const tramNodesOptions = { color: 'darkred'};
+    const busEdgesOptions = { color: '#398bff' };
+    const busNodesOptions = { color: 'darkblue' };
+    const blackOptions = {color: 'black'};
 
-    // map settings
-    const blackOptions = { color: 'black' };
-    const redOptions = { color: 'red' };
-    const limeOptions = { color: 'lime' };
+    const [busEdges, setBusEdges] = useState([]);
+    const [busNodes, setBusNodes] = useState([]);
+    const [tramEdges, setTramEdges] = useState([]);
+    const [tramNodes, setTramNodes] = useState([]);
+    const [center, setCenter] = useState([]);
 
     // getting data from api
     
@@ -24,18 +27,18 @@ function PolygonMap({pos, transport}) {
     
     useEffect(() => {
         const fetchData = async () => {
-            const data = await cityService.getPolygon(JSON.stringify(pos), transport);
-            console.log(data);
-            setEdges(data.edges.features.map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
-            setNodes(data.nodes.features.map(item => [item.properties.y, item.properties.x, item.id]));
+            const data = await cityService.getPolygon(pos, transport);
+            console.log('poly = ', data);
             setCenter([data.center[1], data.center[0]]);
+            setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+            setBusNodes(data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
+            setTramEdges(data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+            setTramNodes(data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
             setLoaded(true);
         };
         fetchData();
     }, [pos, transport]);
 
-
-    
 
     // press on map
     const [positions, setPositions] = useState([]);
@@ -51,11 +54,18 @@ function PolygonMap({pos, transport}) {
     // button handling
     function clear() {
         setPositions([]);
+        //setPositions([getFromDb]);
     }
 
     function saveNodes() {
-        const nodesData = JSON.stringify(nodes.map((el) => [el[0], el[1]]));
-        const blob = new Blob([nodesData], {type: "application/json"});
+        let nodesData = {};
+        if (tramNodes) {
+            nodesData.tram = tramNodes.map((el) => [el[0], el[1]]);
+        } 
+        if (busNodes) {
+            nodesData.bus = busNodes.map((el) => [el[0], el[1]]);
+        }
+        const blob = new Blob([JSON.stringify(nodesData)], {type: "application/json"});
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a'); 
         link.download = "nodes.json";
@@ -64,13 +74,25 @@ function PolygonMap({pos, transport}) {
     }
 
     function saveEdges() {
-        const edgesData = JSON.stringify(edges);
-        const blob = new Blob([edgesData], {type: "application/json"});
+        let edgesData = {};
+        if (tramEdges) {
+            edgesData.tram = tramEdges;
+        }
+        if (busEdges) {
+            edgesData.bus = busEdges;
+        }
+        const blob = new Blob([JSON.stringify(edgesData)], {type: "application/json"});
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a'); 
         link.download = "edges.json";
         link.href = url;
         link.click();  
+    }
+
+    async function polygonHandle() {
+        /* 
+        const data = await cityService.postPolygon(positions);
+        */
     }
 
     if (!loaded) {
@@ -80,7 +102,6 @@ function PolygonMap({pos, transport}) {
             </div>
         )
     }
-    const leafletpos = pos.map((el) => [el[1], el[0]]);
     return (
         <div className={styles.MapContainer}>
             <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={true}>
@@ -93,14 +114,24 @@ function PolygonMap({pos, transport}) {
                     Центр города.
                     </Popup>
                  </Marker>
-                <Polygon positions={leafletpos} pathOptions={blackOptions}/>
-                <LocationGetter/>
-                <Polygon pathOptions={redOptions} positions={positions}></Polygon>
-                <Polyline pathOptions={limeOptions} positions={edges}></Polyline>
-                {nodes.map((el) => (
-                    <Circle center={[el[0], el[1]]} key={el[2]}></Circle>
+                <Polygon positions={pos.map((el) => [el[1], el[0]])} pathOptions={blackOptions}/>
+                {/* bus */}
+                <Polyline pathOptions={busEdgesOptions} positions={busEdges}></Polyline>
+                {(busNodes.map((el) =>
+                    (
+                        <Circle key={el[2]} center={[el[0], el[1]]} radius={10} pathOptions={busNodesOptions}></Circle>
+                    )
                 ))}
+                {/* tram */}
+                <Polyline pathOptions={tramEdgesOptions} positions={tramEdges}></Polyline>
+                {(tramNodes.map((el) =>
+                    (
+                        <Circle key={el[2]} center={[el[0], el[1]]} radius={10} pathOptions={tramNodesOptions}></Circle>
+                    )
+                ))}
+                <LocationGetter/>
             </MapContainer>
+            <button className={styles.btn} onClick={polygonHandle}>Обработать полигон</button>
             <button className={styles.btn} onClick={clear}>Очистить карту</button>
             <button className={styles.btn} onClick={saveNodes}>Сохранить узлы</button>
             <button className={styles.btn} onClick={saveEdges}>Сохранить рёбра</button>

@@ -72,3 +72,74 @@
     transition-duration: 200ms;
     transition-timing-function: ease-in-out;
 }
+
+.redline {
+    color:red;
+    width: 30px;
+    height: 1px;
+    border: 1px solid red;
+    margin-top: 10px;
+}
+
+.redstop {
+    display: flex;
+    border-radius: 50%;
+    border: 2px solid darkred;
+    width: 10px;
+    height: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.blueline {
+    color: blue;
+    width: 30px;
+    height: 1px;
+    border: 1px solid rgb(0, 94, 255);
+    margin-top: 10px;
+}
+
+.bluestop {
+    display: flex;
+    border-radius: 50%;
+    border: 2px solid darkblue;
+    width: 10px;
+    height: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+
+.legend {
+    display: flex;
+    height: auto;
+    border-radius: 5px;
+    background-color: white;
+    width: 50%;
+    margin-left: 25%;
+    margin-right: 25%;
+    margin-top: 5px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    transition-duration: 200ms;
+    justify-content: space-around;
+    flex-direction: column;
+}
+
+.legendElement {
+    display: flex;
+    padding: 0 10px;
+    text-align: center;
+    justify-content: left;
+}
+
+.objectname {
+    display: block;
+    margin-left: 10px;
+    font-family: 'Open-sans', sans-serif;
+    font-size: 14px;
+}
