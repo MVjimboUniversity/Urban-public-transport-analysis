@@ -743,19 +743,19 @@ def _convert_route(element):
     stops = {}
     platforms = {}
     paths= {}
-    order = 0
+    stop_order = 0
         
     for member in element["members"]:
-        if "role" in member and member["role"] in settings.platform_tag_names:
+        if "role" in member and member["role"] in settings.platform_tag_rolse:
             platforms[member["ref"]] = element["id"]
         elif member["type"] == "node" and "role" in member:
-            if member["role"] in settings.stop_tag_names:
+            if member["role"] in settings.stop_tag_roles:
                 stops[member["ref"]] = element["id"]
-                route["stops"].append({"order": order, 
+                route["stops"].append({"order": stop_order, 
                                        "osmid": member["ref"], 
                                        "role": member["role"]
                                        })
-                order += 1
+                stop_order += 1
             # else:
             #     route["platforms"].append({"order": i, 
             #                                "osmid": member["ref"], 
@@ -806,15 +806,25 @@ def _parse_nodes_paths(response_json):
                 
     for platform_id in platforms.keys():
         if platform_id in nodes:
-            del nodes[platform_id]
+            if "public_transport" in nodes[platform_id] and nodes[platform_id]["public_transport"] in settings.platform_tags:
+                del nodes[platform_id]
         elif platform_id in paths:
             for node_id in paths[platform_id]["nodes"]:
                 if node_id in nodes:
                     del nodes[node_id]
             del paths[platform_id]
+            
+    fake_stop_ids = []
     
     for stop_id, route_ids in stops.items():
-        nodes[stop_id]["routes"] = list(route_ids)
+        if stop_id in nodes:
+            nodes[stop_id]["routes"] = list(route_ids)
+        else:
+            fake_stop_ids.append(stop_id)
+            
+    for stop_id in fake_stop_ids:
+        del stops[stop_id]
+            
     return nodes, paths, routes, stops, paths_routs
 
 
