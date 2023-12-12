@@ -186,5 +186,7 @@ useful_tags_relation = [
     "route",
     "colour"
 ]
-stop_tag_names = ["stop_entry_only", "stop", "stop_exit_only"]
-platform_tag_names = ["platform_entry_only", "platform", "platform_exit_only"]
+stop_tag_roles = ["stop_entry_only", "stop", "stop_exit_only"]
+platform_tag_rolse = ["platform_entry_only", "platform", "platform_exit_only"]
+stop_tags = ["stop_position"]
+platform_tags = ["platform"]
