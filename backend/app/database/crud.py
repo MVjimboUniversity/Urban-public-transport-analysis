@@ -178,7 +178,6 @@ def check_graph(driver):
 
 DELETE_QUERY = '''
 MATCH (n)
-WITH n LIMIT 10000
 DETACH DELETE n
 RETURN count(*);
 '''
