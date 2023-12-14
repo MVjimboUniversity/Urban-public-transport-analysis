@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styles from '../Map/Map.module.css'
-import { MapContainer, TileLayer, Polyline, Circle, Polygon, useMapEvents, LayersControl } from 'react-leaflet'
+import { MapContainer, TileLayer, Polyline, Circle, Polygon, useMapEvents} from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
-import { cityService } from "../../../services/city.service";
-import HashLoader from "react-spinners/HashLoader";
+// import { cityService } from "../../../services/city.service";
+// import HashLoader from "react-spinners/HashLoader";
 
 
 
-function CityMap({cityname, transport}) {
+function CityMap({cityname, transport, exists, isLoaded, tramNodes, tramEdges, busNodes, busEdges, center}) {
     const tramEdgesOptions = { color: 'red' };
     const tramNodesOptions = { color: 'darkred'};
     const busEdgesOptions = { color: '#398bff' };
     const busNodesOptions = { color: 'darkblue' };
     const redOptions = {color: 'black'};
 
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [busEdges, setBusEdges] = useState([]);
-    const [busNodes, setBusNodes] = useState([]);
-    const [tramEdges, setTramEdges] = useState([]);
-    const [tramNodes, setTramNodes] = useState([]);
-    const [center, setCenter] = useState([]);
+    // const [isLoaded, setIsLoaded] = useState(false);
+    // const [busEdges, setBusEdges] = useState([]);
+    // const [busNodes, setBusNodes] = useState([]);
+    // const [tramEdges, setTramEdges] = useState([]);
+    // const [tramNodes, setTramNodes] = useState([]);
+    // const [center, setCenter] = useState([]);
 
     // Press on map
     const [positions, setPositions] = useState([]);
@@ -76,28 +76,28 @@ function CityMap({cityname, transport}) {
         */
     }
 
-    useEffect( () => {
-        const fetchData = async () => {
-            const data = await cityService.getCity(cityname, transport);
-            console.log('transport = ', data);
-            setCenter([data.center[1], data.center[0]]);
-            setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
-            setBusNodes(data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
-            setTramEdges(data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
-            setTramNodes(data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
-            setIsLoaded(true);
-        }
-        fetchData();
-    },  [cityname, transport]);
-    console.log('asdadd', tramEdges);
-    if (!isLoaded) {
-        return (
-            <div className={styles.MapContainer}>
-                <HashLoader color={'#352F44'} size={100} className={styles.loader}></HashLoader>   
-            </div>
-        )
-    }
-    else return (
+    // useEffect( () => {
+    //     const fetchData = async () => {
+    //         let data = {};
+    //         if (!exists) {
+    //             data = await cityService.getCity(cityname, transport);
+    //         }
+    //         else {
+    //             data = await cityService.getDb();
+    //         }
+    //         console.log('transport = ', data);
+    //         setCenter([data.center[1], data.center[0]]);
+    //         setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+    //         setBusNodes(data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
+    //         setTramEdges(data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+    //         setTramNodes(data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
+    //         setIsLoaded(true);
+    //     }
+    //     fetchData();
+    // },  [cityname, transport, exists]);
+    // console.log('asdadd', tramEdges);
+
+    return (
         <div className={styles.MapContainer}>
             <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={false}>
                 <TileLayer

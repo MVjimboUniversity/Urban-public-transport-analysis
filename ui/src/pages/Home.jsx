@@ -14,7 +14,7 @@ function Home() {
         const fetchData = async () => {
             const data = await cityService.dbCheck();
             if (data.is_graph_exist === true) {
-                navigate('/existing-map');
+                navigate('/App', {state: {type: 'Exists'}});
             }
             setLoaded(true);
         } 
