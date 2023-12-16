@@ -3,7 +3,7 @@ import styles from './PolygonForm.module.css'
 import * as yup from 'yup'
 import { useNavigate } from "react-router-dom";
 import Checkbox from '@mui/material/Checkbox';
-import { FormControlLabel, FormGroup, Typography } from "@mui/material";
+import { FormControlLabel, FormGroup, Typography, Radio, RadioGroup, FormLabel } from "@mui/material";
 
 
 let shape = yup.object().shape({
@@ -50,14 +50,15 @@ function parser(str) {
 
 
 function PolygonForm() {
+    const navigate = useNavigate()
+
     const [polygon, setPolygon] = useState('')
     const [tramSelected, setTramSelected] = useState(false);
     const [autobusSelected, setAutobusSelected] = useState(false);
     const [trolleybusSelected, setTrolleybusSelected] = useState(false);
+    const [connected, setConnected] = useState(false);
 
-    const navigate = useNavigate()
-
-    let dataToApp = {type : "Polygon", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
+    let dataToApp = {type : "Polygon", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}, connected: false};
 
     async function validateForm() {
         let dataObject = {
@@ -82,6 +83,7 @@ function PolygonForm() {
                 dataToApp.transport.bus = autobusSelected;
                 dataToApp.transport.trolleybus = trolleybusSelected;
                 dataToApp.transport.tram = tramSelected;
+                dataToApp.connected = connected;
                 navigate('/app', {state: dataToApp});
             }
         }
@@ -98,6 +100,13 @@ function PolygonForm() {
                     <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Трамвай</Typography>} 
                     checked={tramSelected} onChange={(e) => setTramSelected(e.target.checked)}/>
                 </FormGroup>
+                <div>
+                    <FormLabel component="legend" fontSize={13}>Граф</FormLabel>
+                    <RadioGroup className={styles.radioBoxForm} value={connected} onChange={(e) => setConnected(e.target.value)}>
+                        <FormControlLabel value={true} control={<Radio/>} label={<Typography fontSize={13}>Связный</Typography>}></FormControlLabel>
+                        <FormControlLabel value={false} control={<Radio/>} label={<Typography fontSize={13}>Несвязный</Typography>}></FormControlLabel>
+                    </RadioGroup>
+                </div>
             </div>
             <button type='button' className={styles.btn} onClick={validateForm} >Apply</button>
         </form>

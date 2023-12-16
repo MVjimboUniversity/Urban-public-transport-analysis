@@ -2,11 +2,10 @@ import React, {useState} from 'react'
 import { useLocation, useNavigate } from 'react-router';
 import styles from './App.module.css'
 import CityMap from './Map/CityMap';
-// import RectangleMap from './Map/RectangleMap';
-// import PolygonMap from './Map/PolygonMap';
 import { cityService } from '../../services/city.service';
 import { useEffect } from 'react';
 import HashLoader from "react-spinners/HashLoader";
+
 
 
 function App(props) {
@@ -24,6 +23,7 @@ function App(props) {
     const [tramEdges, setTramEdges] = useState([]);
     const [tramNodes, setTramNodes] = useState([]);
     const [center, setCenter] = useState([]);
+
 
     useEffect(() => {
         const fetchData = async () => {
