@@ -178,7 +178,7 @@ def get_geo_df(tx, query):
     df = results.to_df()
     df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
     gdf = gpd.GeoDataFrame(df, geometry='geometry')
-    gdf = gdf.drop(columns=["geometry"])
+    gdf = gdf.drop(columns=["geometry_wkt"])
     return gdf
 
 
@@ -197,7 +197,7 @@ def get_data(tx, query, bounds=None):
     df = results.to_df()
     df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
     gdf = gpd.GeoDataFrame(df, geometry='geometry')
-    gdf = gdf.drop(columns=["geometry"])
+    gdf = gdf.drop(columns=["geometry_wkt"])
     return gdf
 
 
