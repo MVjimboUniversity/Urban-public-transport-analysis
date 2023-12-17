@@ -40,6 +40,7 @@ def graph_from_bbox(
     network_types=["bus"],
     simplify=True,
     retain_all=False,
+    connected=False,
     truncate_by_edge=False,
     clean_periphery=None,
     custom_filter=None,
@@ -98,6 +99,7 @@ def graph_from_bbox(
         network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
+        connected=connected,
         truncate_by_edge=truncate_by_edge,
         clean_periphery=clean_periphery,
         custom_filter=custom_filter,
@@ -114,6 +116,7 @@ def graph_from_point(
     network_types=["bus"],
     simplify=True,
     retain_all=False,
+    connected=False,
     truncate_by_edge=False,
     clean_periphery=None,
     custom_filter=None,
@@ -180,6 +183,7 @@ def graph_from_point(
         network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
+        connected=connected,
         truncate_by_edge=truncate_by_edge,
         clean_periphery=clean_periphery,
         custom_filter=custom_filter,
@@ -202,6 +206,7 @@ def graph_from_address(
     network_types=["bus"],
     simplify=True,
     retain_all=False,
+    connected=False,
     truncate_by_edge=False,
     return_coords=False,
     clean_periphery=None,
@@ -267,6 +272,7 @@ def graph_from_address(
         network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
+        connected=connected,
         truncate_by_edge=truncate_by_edge,
         clean_periphery=clean_periphery,
         custom_filter=custom_filter,
@@ -285,6 +291,7 @@ def graph_from_place(
     network_types=["bus"],
     simplify=True,
     retain_all=False,
+    connected=False,
     truncate_by_edge=False,
     which_result=None,
     buffer_dist=None,
@@ -378,6 +385,7 @@ def graph_from_place(
         network_types=network_types,
         simplify=simplify,
         retain_all=retain_all,
+        connected=connected,
         truncate_by_edge=truncate_by_edge,
         clean_periphery=clean_periphery,
         custom_filter=custom_filter,
@@ -392,6 +400,7 @@ def graph_from_polygon(
     network_types=["bus"],
     simplify=True,
     retain_all=False,
+    connected=False,
     truncate_by_edge=False,
     clean_periphery=None,
     custom_filter=None,
@@ -545,6 +554,18 @@ def graph_from_polygon(
         all_paths_routes = _union_dicts(all_paths_routes, paths_routes)
 
     G = nx.compose_all(Graphs)
+    
+    # add routes id in nodes
+    for stop_id, routes in all_stops.items():
+        G.nodes[stop_id]["routes"] = list(routes)
+        
+    # add routes id in edges
+    edges = [edge for edge in G.edges()]
+    
+    for u, v in edges:
+        # if "routes" in G.nodes[u] and "routes" in G.nodes[v]:
+        G[u][v][0]["routes"] = list(set(G.nodes[u]["routes"]) & set(G.nodes[v]["routes"]))
+
     utils.log(f"graph_from_polygon returned graph with {len(G):,} nodes and {len(G.edges):,} edges")
     return G, all_routes, all_stops, all_paths_routes
 
