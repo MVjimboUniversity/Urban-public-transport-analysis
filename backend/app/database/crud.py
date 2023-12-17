@@ -1,4 +1,5 @@
 import geopandas as gpd
+from shapely import Polygon
 
 
 # First, define Cypher queries to create constraints and indexes
@@ -40,40 +41,6 @@ RELS_INSERT_QUERY = '''
             r.geometry_wkt = path.geometry_wkt,
             r.length = toFloat(path.length)
     RETURN COUNT(*) AS total
-    '''
-
-
-NODE_GET_QUERY = '''
-    MATCH (s:Stop) 
-    RETURN 
-    s.osmid AS osmid, 
-    s.location.longitude AS x, 
-    s.location.latitude AS y, 
-    s.name AS name, 
-    s.public_transport AS public_transport, 
-    s.tram AS tram, 
-    s.bus AS bus, 
-    s.routes AS routes, 
-    s.street_count AS street_count, 
-    s.geometry_wkt AS geometry_wkt
-    '''
-
-
-RELS_GET_QUERY = '''
-    MATCH (u:Stop)-[r:ROUTE_SEGMENT]->(v:Stop) 
-    RETURN
-    u.osmid AS u, 
-    v.osmid AS v, 
-    r.osmid AS osmid, 
-    r.name AS name, 
-    r.highway AS higway, 
-    r.lanes AS lanes, 
-    r.maxspeed AS maxspeed, 
-    r.railway AS railway, 
-    r.oneway AS oneway, 
-    r.reversed AS reversed, 
-    r.length AS length, 
-    r.geometry_wkt AS geometry_wkt
     '''
 
 
@@ -132,12 +99,86 @@ def create_graph(driver, df_center, gdf_nodes, gdf_relationships):
         session.execute_write(insert_data, RELS_INSERT_QUERY, gdf_relationships.drop(columns=["geometry"]))
 
 
+NODE_GET_QUERY = '''
+    MATCH (s:Stop) 
+    RETURN 
+    s.osmid AS osmid, 
+    s.location.longitude AS x, 
+    s.location.latitude AS y, 
+    s.name AS name, 
+    s.public_transport AS public_transport, 
+    s.tram AS tram, 
+    s.bus AS bus, 
+    s.routes AS routes, 
+    s.street_count AS street_count, 
+    s.geometry_wkt AS geometry_wkt
+    '''
+
+
+RELS_GET_QUERY = '''
+    MATCH (u:Stop)-[r:ROUTE_SEGMENT]->(v:Stop) 
+    RETURN
+    u.osmid AS u, 
+    v.osmid AS v, 
+    r.osmid AS osmid, 
+    r.name AS name, 
+    r.highway AS higway, 
+    r.lanes AS lanes, 
+    r.maxspeed AS maxspeed, 
+    r.railway AS railway, 
+    r.oneway AS oneway, 
+    r.reversed AS reversed, 
+    r.length AS length, 
+    r.geometry_wkt AS geometry_wkt
+    '''
+
+
+bbox_query = lambda node_name: 'point.withinBBox(' + node_name + '.location, point({longitude: $minx, latitude: $miny }), point({longitude: $maxx, latitude: $maxy}))'
+
+
+node_get_bbox_query = lambda bbox_query: f'''
+    MATCH (s:Stop)
+    WHERE {bbox_query('s')}
+    RETURN 
+    s.osmid AS osmid, 
+    s.location.longitude AS x, 
+    s.location.latitude AS y, 
+    s.name AS name, 
+    s.public_transport AS public_transport, 
+    s.tram AS tram, 
+    s.bus AS bus, 
+    s.routes AS routes, 
+    s.street_count AS street_count, 
+    s.geometry_wkt AS geometry_wkt
+    '''
+
+
+rels_get_bbox_query = lambda bbox_query: f'''
+    MATCH (u:Stop)-[r:ROUTE_SEGMENT]->(v:Stop)
+    WHERE {bbox_query('u')}
+    AND {bbox_query('v')}
+    RETURN
+    u.osmid AS u, 
+    v.osmid AS v, 
+    r.osmid AS osmid, 
+    r.name AS name, 
+    r.highway AS higway, 
+    r.lanes AS lanes, 
+    r.maxspeed AS maxspeed, 
+    r.railway AS railway, 
+    r.oneway AS oneway, 
+    r.reversed AS reversed, 
+    r.length AS length, 
+    r.geometry_wkt AS geometry_wkt
+    '''
+
+
 def get_geo_df(tx, query):
     results = tx.run(query)
     df = results.to_df()
     df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
     gdf = gpd.GeoDataFrame(df, geometry='geometry')
-    gdf = gdf.drop(columns=["geometry_wkt"])
+    gdf = gdf.drop(columns=["geometry"])
     return gdf
 
 
@@ -147,17 +188,44 @@ def get_df(tx, query):
     return df
 
 
-def get_graph(driver):
+def get_data(tx, query, bounds=None):
+    if bounds is None:
+        results = tx.run(query)
+    else:
+        minx, miny, maxx, maxy = bounds
+        results = tx.run(query, parameters={"minx": minx, "miny": miny, "maxx": maxx, "maxy": maxy})
+    df = results.to_df()
+    df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
+    gdf = gpd.GeoDataFrame(df, geometry='geometry')
+    gdf = gdf.drop(columns=["geometry"])
+    return gdf
+
+
+def get_graph(driver, polygon):
     gdf_nodes = None
     gdf_relationships = None
     df_center = None
 
-    with driver.session() as session:
-        gdf_nodes = session.execute_read(get_geo_df, NODE_GET_QUERY)
-        df_center = session.execute_read(get_df, CENTER_GET_QUERY)
+    if polygon:
+        custom_polygon = Polygon(polygon)
+        custom_bounds = custom_polygon.bounds
 
-    with driver.session() as session:
-        gdf_relationships = session.execute_read(get_geo_df, RELS_GET_QUERY)
+        with driver.session() as session:
+            node_get_query = node_get_bbox_query(bbox_query)
+            gdf_nodes = session.execute_read(get_data, node_get_query, custom_bounds)
+
+            df_center = session.execute_read(get_df, CENTER_GET_QUERY)
+
+            rels_get_query = rels_get_bbox_query(bbox_query)
+            gdf_relationships = session.execute_read(get_data, rels_get_query, custom_bounds)
+    
+    else:
+        with driver.session() as session:
+            gdf_nodes = session.execute_read(get_geo_df, NODE_GET_QUERY)
+            
+            df_center = session.execute_read(get_df, CENTER_GET_QUERY)
+
+            gdf_relationships = session.execute_read(get_geo_df, RELS_GET_QUERY)
     
     return df_center, gdf_nodes, gdf_relationships
 
