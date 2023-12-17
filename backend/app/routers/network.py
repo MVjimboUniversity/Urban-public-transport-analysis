@@ -4,7 +4,6 @@ from typing import Annotated
 import pandas as pd
 from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
-from pydantic import BaseModel
 
 import app.public_transport_osmnx.osmnx as ox
 from app.database import driver, create_graph, get_graph, check_graph, remove_graph
@@ -34,21 +33,12 @@ async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: b
 FilterParams = Annotated[dict, Depends(filter_parameters)]
 
 
-class ReturnGraph(BaseModel):
-    center: list
-    nodes: list
-    edges: list
-
-class ReturnGraphByName(ReturnGraph):
-    boundaries: list
-
-
 @router.get("/name")
 async def network_by_name(
     city: Annotated[str, Query(description="Название города.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
-) -> ReturnGraphByName:
+):
     """
     Возвращает сеть трамвайных путей по названию.
     """
@@ -75,7 +65,7 @@ async def network_by_bbox(
     west: Annotated[float, Query(description="Западная долгота ограничивающей рамки.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
-) -> ReturnGraph:
+):
     """
     Возвращает сеть трамвайных путей по ограниченой рамке.
     """
@@ -96,7 +86,7 @@ async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
-) -> ReturnGraph:
+):
     """
     Возвращает сеть трамвайных путей по полигону.
     """
@@ -114,12 +104,8 @@ async def network_by_polygon(
     return json.dumps(data)
 
 
-class ReturnCheck(BaseModel):
-    is_graph_exist: bool
-
-
 @router.get("/db/check")
-async def is_graph_exist() -> ReturnCheck:
+async def is_graph_exist():
     """
     Проверяет существует ли граф в базе данных.
     """
@@ -129,7 +115,7 @@ async def is_graph_exist() -> ReturnCheck:
 @router.post("/db")
 async def read_graph(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")] = None
-) -> ReturnGraph:
+):
     """
     Возвращает граф из базы данных.
     """
