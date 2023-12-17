@@ -4,6 +4,7 @@ from typing import Annotated
 import pandas as pd
 from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
+from pydantic import BaseModel
 
 import app.public_transport_osmnx.osmnx as ox
 from app.database import driver, create_graph, get_graph, check_graph, remove_graph
@@ -33,7 +34,16 @@ async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: b
 FilterParams = Annotated[dict, Depends(filter_parameters)]
 
 
-@router.get("/name")
+class ReturnGraph(BaseModel):
+    center: list
+    nodes: list
+    edges: list
+
+class ReturnGraphByName(ReturnGraph):
+    boundaries: list
+
+
+@router.get("/name", response_model=ReturnGraphByName)
 async def network_by_name(
     city: Annotated[str, Query(description="Название города.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
@@ -57,7 +67,7 @@ async def network_by_name(
     return json.dumps(data)
 
 
-@router.get("/bbox")
+@router.get("/bbox", response_model=ReturnGraph)
 async def network_by_bbox(
     north: Annotated[float, Query(description="Северная широта ограничительной рамки.")],
     south: Annotated[float, Query(description="Южная широта ограничительной рамки.")],
@@ -81,7 +91,7 @@ async def network_by_bbox(
     return json.dumps(data)
 
 
-@router.post("/polygon")
+@router.post("/polygon", response_model=ReturnGraph)
 async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
@@ -104,7 +114,11 @@ async def network_by_polygon(
     return json.dumps(data)
 
 
-@router.get("/db/check")
+class ReturnCheck(BaseModel):
+    is_graph_exist: bool
+
+
+@router.get("/db/check", response_model=ReturnCheck)
 async def is_graph_exist():
     """
     Проверяет существует ли граф в базе данных.
@@ -112,7 +126,7 @@ async def is_graph_exist():
     return {"is_graph_exist": bool(check_graph(driver))}
 
 
-@router.post("/db")
+@router.post("/db", response_model=ReturnGraph)
 async def read_graph(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")] = None
 ):
