@@ -16,6 +16,7 @@ function App(props) {
     const type = location.state.type;
     const dataToApp = location.state.dataArr;
     const transport = location.state.transport;
+    const connected = location.state.connected;
 
     const [loaded, setLoaded] = useState(false);
     const [busEdges, setBusEdges] = useState([]);
@@ -31,15 +32,15 @@ function App(props) {
             console.log('type = ', type);
             switch (type) {
                 case 'City':
-                    data = await cityService.getCity(dataToApp[0], transport);
+                    data = await cityService.getCity(dataToApp[0], transport, connected);
                     console.log('City', data);
                     break;
                 case 'Polygon':
-                    data = await cityService.getPolygon(dataToApp[0], transport);
+                    data = await cityService.getPolygon(dataToApp[0], transport, connected);
                     console.log('Polygon', data);
                     break;
                 case 'Rectangle':
-                    data = await cityService.getBbox(dataToApp[0], transport);
+                    data = await cityService.getBbox(dataToApp[0], transport, connected);
                     console.log('Rectangle', data);
                     break;
                 case 'Exists':
@@ -57,7 +58,7 @@ function App(props) {
             setLoaded(true);            
         }
         fetchData();
-    }, [type, transport, dataToApp]);
+    }, [type, transport, dataToApp, connected]);
 
     // handle back button
     function buttonHandle() {
