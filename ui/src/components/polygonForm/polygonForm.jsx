@@ -56,9 +56,10 @@ function PolygonForm() {
     const [tramSelected, setTramSelected] = useState(false);
     const [autobusSelected, setAutobusSelected] = useState(false);
     const [trolleybusSelected, setTrolleybusSelected] = useState(false);
+    const [subwaySelected, setSubwaySelected] = useState(false);
     const [connected, setConnected] = useState(false);
 
-    let dataToApp = {type : "Polygon", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}, connected: false};
+    let dataToApp = {type : "Polygon", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected, subway: subwaySelected}, connected: false};
 
     async function validateForm() {
         let dataObject = {
@@ -99,6 +100,8 @@ function PolygonForm() {
                     checked={trolleybusSelected} onChange={(e) => setTrolleybusSelected(e.target.checked)}/>
                     <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Трамвай</Typography>} 
                     checked={tramSelected} onChange={(e) => setTramSelected(e.target.checked)}/>
+                    <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Метро</Typography>} 
+                    checked={subwaySelected} onChange={(e) => setSubwaySelected(e.target.checked)}/>
                 </FormGroup>
                 <div>
                     <FormLabel component="legend" fontSize={13}>Граф</FormLabel>

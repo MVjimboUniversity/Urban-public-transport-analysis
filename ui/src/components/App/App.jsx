@@ -23,13 +23,16 @@ function App(props) {
     const [busNodes, setBusNodes] = useState([]);
     const [tramEdges, setTramEdges] = useState([]);
     const [tramNodes, setTramNodes] = useState([]);
+    const [subwayNodes, setSubwayNodes] = useState([]);
+    const [subwayEdges, setSubwayEdges] = useState([]);
     const [center, setCenter] = useState([]);
+    const [nodes, setNodes] = useState([]);
+    const [edges, setEdges] = useState([]);
 
 
     useEffect(() => {
         const fetchData = async () => {
             let data = {};
-            console.log('type = ', type);
             switch (type) {
                 case 'City':
                     data = await cityService.getCity(dataToApp[0], transport, connected);
@@ -51,10 +54,14 @@ function App(props) {
                     break;
             }
             setCenter([data.center[1], data.center[0]]);
+            setNodes(data.nodes);
+            setEdges(data.edges);
             setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setBusNodes(data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
-            setTramEdges(data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+            setTramEdges(data.edges.features.filter((el) => (el.properties.railway && el.properties.railway === 'tram')).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setTramNodes(data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
+            setSubwayEdges(data.edges.features.filter((el) => (el.properties.railway && el.properties.railway === 'subway')).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+            setSubwayNodes(data.nodes.features.filter((el) => (!el.properties.tram && !el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]))
             setLoaded(true);            
         }
         fetchData();
@@ -91,8 +98,8 @@ function App(props) {
             <p>Получены данные: {dataToApp[0]} </p> */}
             <br></br>
             <br></br>
-            <CityMap className={styles.Map} transport={transport} isLoaded={loaded} tramNodes={tramNodes} tramEdges={tramEdges} busNodes={busNodes}
-            busEdges={busEdges} center={center}></CityMap>
+            <CityMap className={styles.Map} tramNodes={tramNodes} tramEdges={tramEdges} busNodes={busNodes}
+            busEdges={busEdges} center={center} subwayEdges={subwayEdges} subwayNodes={subwayNodes} nodes={nodes} edges={edges}></CityMap>
         </div>)
 
     // switch (type) {
