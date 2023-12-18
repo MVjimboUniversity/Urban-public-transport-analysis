@@ -133,12 +133,12 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
                     )
                 ))}
                 {/* subway */}
+                <Polyline pathOptions={subwayEdgesOptions} positions={subwayEdges_}></Polyline>
                 {(subwayNodes_.map((el) =>
                     (
                         <Circle key={el[2]} center={[el[0], el[1]]} radius={10} pathOptions={subwayNodesOptions}></Circle>
                     )
                 ))}
-                <Polyline pathOptions={subwayEdgesOptions} positions={subwayEdges_}></Polyline>
                 <Polygon pathOptions={redOptions} positions={positions}></Polygon>
             </MapContainer>
             <button className={styles.btn} onClick={polygonHandle}>Обработать полигон</button>
