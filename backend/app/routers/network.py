@@ -4,7 +4,6 @@ from typing import Annotated
 import pandas as pd
 from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
-from pydantic import BaseModel
 
 import app.public_transport_osmnx.osmnx as ox
 from app.database import driver, create_graph, get_graph, check_graph, remove_graph
@@ -34,23 +33,14 @@ async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: b
 FilterParams = Annotated[dict, Depends(filter_parameters)]
 
 
-class ReturnGraph(BaseModel):
-    center: list
-    nodes: list
-    edges: list
-
-class ReturnGraphByName(ReturnGraph):
-    boundaries: list
-
-
-@router.get("/name", response_model=ReturnGraphByName)
+@router.get("/name")
 async def network_by_name(
     city: Annotated[str, Query(description="Название города.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
 ):
     """
-    Возвращает сеть трамвайных путей по названию.
+    Возвращает сеть общественного транспорта по названию.
     """
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
@@ -67,7 +57,7 @@ async def network_by_name(
     return json.dumps(data)
 
 
-@router.get("/bbox", response_model=ReturnGraph)
+@router.get("/bbox")
 async def network_by_bbox(
     north: Annotated[float, Query(description="Северная широта ограничительной рамки.")],
     south: Annotated[float, Query(description="Южная широта ограничительной рамки.")],
@@ -77,7 +67,7 @@ async def network_by_bbox(
     filters: FilterParams
 ):
     """
-    Возвращает сеть трамвайных путей по ограниченой рамке.
+   Возвращает сеть общественного транспорта по ограниченой рамке.
     """
     G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_types=filters, connected=connected)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
@@ -91,14 +81,14 @@ async def network_by_bbox(
     return json.dumps(data)
 
 
-@router.post("/polygon", response_model=ReturnGraph)
+@router.post("/polygon")
 async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
     connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
 ):
     """
-    Возвращает сеть трамвайных путей по полигону.
+   Возвращает сеть общественного транспорта по полигону.
     """
     polygon = Polygon(polygon)
     G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_types=filters, connected=connected)
@@ -114,11 +104,7 @@ async def network_by_polygon(
     return json.dumps(data)
 
 
-class ReturnCheck(BaseModel):
-    is_graph_exist: bool
-
-
-@router.get("/db/check", response_model=ReturnCheck)
+@router.get("/db/check")
 async def is_graph_exist():
     """
     Проверяет существует ли граф в базе данных.
@@ -126,7 +112,7 @@ async def is_graph_exist():
     return {"is_graph_exist": bool(check_graph(driver))}
 
 
-@router.post("/db", response_model=ReturnGraph)
+@router.post("/db")
 async def read_graph(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")] = None
 ):
