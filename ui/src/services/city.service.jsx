@@ -29,11 +29,15 @@ export const cityService = {
         return response.data;
     },
     async getDb() {
-        const response = await axios.get('http://localhost:80/network/db');
+        const response = await axios.post('http://localhost:80/network/db');
         return JSON.parse(response.data);
     },
     async deleteGraph() {
         const response = await axios.get('http://localhost:80/network/db/delete');
         return response.data;
+    },
+    async userDb(positions) {
+        const response = await axios.post('http://localhost:80/network/db', positions);
+        return JSON.parse(response.data);
     }
 }

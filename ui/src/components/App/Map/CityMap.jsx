@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styles from '../Map/Map.module.css'
 import { MapContainer, TileLayer, Polyline, Circle, Polygon, useMapEvents} from 'react-leaflet'
 import { Marker, Popup } from "react-leaflet";
-// import { cityService } from "../../../services/city.service";
+import { cityService } from "../../../services/city.service";
 // import HashLoader from "react-spinners/HashLoader";
 
 
@@ -13,13 +13,14 @@ function CityMap({cityname, transport, exists, isLoaded, tramNodes, tramEdges, b
     const busEdgesOptions = { color: '#398bff' };
     const busNodesOptions = { color: 'darkblue' };
     const redOptions = {color: 'black'};
-
-    // const [isLoaded, setIsLoaded] = useState(false);
-    // const [busEdges, setBusEdges] = useState([]);
-    // const [busNodes, setBusNodes] = useState([]);
-    // const [tramEdges, setTramEdges] = useState([]);
-    // const [tramNodes, setTramNodes] = useState([]);
-    // const [center, setCenter] = useState([]);
+    
+    const [tramNodes_, setTramNodes] = useState(tramNodes);
+    const [tramEdges_, setTramEdges] = useState(tramEdges);
+    const [busNodes_, setBusNodes] = useState(busNodes);
+    const [busEdges_, setBusEdges] = useState(busEdges);
+    // useEffect(() => {
+    //     setTramNodes(tramNodes1);
+    // }, []);
 
     // Press on map
     const [positions, setPositions] = useState([]);
@@ -69,13 +70,22 @@ function CityMap({cityname, transport, exists, isLoaded, tramNodes, tramEdges, b
         link.href = url;
         link.click();  
     }
-
     async function polygonHandle() {
-        /* 
-        const data = await cityService.postPolygon(positions);
-        */
+        let data = {};
+        if (positions.length === 0) {
+            data = await cityService.getDb();
+        }
+        else {
+            let userPolygon = positions.map((el) => [el.lng, el.lat]);
+            userPolygon.push([positions[0].lng, positions[0].lat]);
+            data = await cityService.userDb(userPolygon);
+        }
+        center = [await data.center[1], await data.center[0]];
+        setTramEdges(data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+        setTramNodes(data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
+        setBusNodes(data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
+        setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]])))); 
     }
-
     // useEffect( () => {
     //     const fetchData = async () => {
     //         let data = {};
@@ -111,15 +121,15 @@ function CityMap({cityname, transport, exists, isLoaded, tramNodes, tramEdges, b
                 </Marker>
                 <LocationGetter/>
                 {/* bus */}
-                <Polyline pathOptions={busEdgesOptions} positions={busEdges}></Polyline>
-                {(busNodes.map((el) =>
+                <Polyline pathOptions={busEdgesOptions} positions={busEdges_}></Polyline>
+                {(busNodes_.map((el) =>
                     (
                         <Circle key={el[2]} center={[el[0], el[1]]} radius={10} pathOptions={busNodesOptions}></Circle>
                     )
                 ))}
                 {/* tram */}
-                <Polyline pathOptions={tramEdgesOptions} positions={tramEdges}></Polyline>
-                {(tramNodes.map((el) =>
+                <Polyline pathOptions={tramEdgesOptions} positions={tramEdges_}></Polyline>
+                {(tramNodes_.map((el) =>
                     (
                         <Circle key={el[2]} center={[el[0], el[1]]} radius={10} pathOptions={tramNodesOptions}></Circle>
                     )
