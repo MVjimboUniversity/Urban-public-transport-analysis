@@ -13,7 +13,7 @@ router = APIRouter(
     tags=["Network"],
 )
 
-async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: bool = False):
+async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: bool = False, subway: bool = False):
     result = []
 
     if bus:
@@ -24,6 +24,9 @@ async def filter_parameters(bus: bool = False, tram: bool = False, trolleybus: b
 
     if trolleybus:
         result.append("trolleybus")
+    
+    if subway:
+        result.append("subway")
 
     return result
 
@@ -33,14 +36,15 @@ FilterParams = Annotated[dict, Depends(filter_parameters)]
 @router.get("/name")
 async def network_by_name(
     city: Annotated[str, Query(description="Название города.")],
+    connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
 ):
     """
-    Возвращает сеть трамвайных путей по названию.
+    Возвращает сеть общественного транспорта по названию.
     """
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
-    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_types=filters)
+    G, routes, stops, paths_routes = ox.graph_from_place(city, simplify=True, retain_all=True, network_types=filters, connected=connected)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = geocode_gdf[["lat", "lon"]]
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
@@ -59,12 +63,13 @@ async def network_by_bbox(
     south: Annotated[float, Query(description="Южная широта ограничительной рамки.")],
     east: Annotated[float, Query(description="Восточная долгота ограничивающей рамки.")],
     west: Annotated[float, Query(description="Западная долгота ограничивающей рамки.")],
+    connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
 ):
     """
-    Возвращает сеть трамвайных путей по ограниченой рамке.
+   Возвращает сеть общественного транспорта по ограниченой рамке.
     """
-    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_types=filters)
+    G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True, network_types=filters, connected=connected)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = pd.DataFrame(data = {"lon": (east + west) / 2, "lat": (north + south) / 2}, index=[0, ])
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)
@@ -79,13 +84,14 @@ async def network_by_bbox(
 @router.post("/polygon")
 async def network_by_polygon(
     polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")],
+    connected: Annotated[bool, Query(description="Нужно ли соединять остановки разных типов транспорта в радиусе 200 метров.")],
     filters: FilterParams
 ):
     """
-    Возвращает сеть трамвайных путей по полигону.
+   Возвращает сеть общественного транспорта по полигону.
     """
     polygon = Polygon(polygon)
-    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_types=filters)
+    G, routes, stops, paths_routes = ox.graph_from_polygon(polygon, simplify=True, retain_all=True, network_types=filters, connected=connected)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     center = list(polygon.centroid.coords[0])
     df_center = pd.DataFrame(data = {"lon": center[0], "lat": center[1]}, index=[0, ])
@@ -106,12 +112,14 @@ async def is_graph_exist():
     return {"is_graph_exist": bool(check_graph(driver))}
 
 
-@router.get("/db")
-async def read_graph():
+@router.post("/db")
+async def read_graph(
+    polygon: Annotated[list[tuple[float, float]], Body(description="Последовательность координат, задающая полигон.")] = None
+):
     """
     Возвращает граф из базы данных.
     """
-    df_center, gdf_nodes, gdf_relationships = get_graph(driver)
+    df_center, gdf_nodes, gdf_relationships = get_graph(driver, polygon)
     data = {
         "center": [ df_center.loc[0, "lon"], df_center.loc[0, "lat"]],
         "nodes": json.loads(gdf_nodes.to_json()),
