@@ -1,7 +1,7 @@
 .MapContainer {
     display: flex;
     border: 0;
-    height: 90%;
+    height: 95%;
     width: 90%;
     margin-left: 5%;
     margin-right: 5%;
@@ -83,6 +83,25 @@
     margin-right: 10px;
 }
 
+.greenline {
+    color: lime;
+    width: 30px;
+    height: 1px;
+    border: 1px solid rgb(0, 255, 0);
+    margin-top: 10px;
+}
+
+.greenstop {
+    display: flex;
+    border-radius: 50%;
+    border: 2px solid #304D30;
+    width: 10px;
+    height: 10px;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 10px;
+    margin-right: 10px;
+}
 
 .legend {
     display: flex;

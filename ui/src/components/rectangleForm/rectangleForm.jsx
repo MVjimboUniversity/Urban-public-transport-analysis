@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as yup from 'yup'
 import Checkbox from '@mui/material/Checkbox';
-import { FormControlLabel, FormGroup, Typography } from "@mui/material";
+import { FormControlLabel, FormGroup, Typography, Radio, RadioGroup, FormLabel } from "@mui/material";
 
 
 // filter to vaildate data
@@ -17,6 +17,8 @@ let shape = yup.object().shape({
 
 
 function RectangleForm() {
+    const navigate = useNavigate();
+
     const [top, setTop] = useState('');
     const [bottom, setBottom] = useState('');
     const [left, setLeft] = useState('');
@@ -24,10 +26,10 @@ function RectangleForm() {
     const [tramSelected, setTramSelected] = useState(false);
     const [autobusSelected, setAutobusSelected] = useState(false);
     const [trolleybusSelected, setTrolleybusSelected] = useState(false);
-    
-    const navigate = useNavigate();
+    const [subwaySelected, setSubwaySelected] = useState(false);
+    const [connected, setConnected] = useState(false);
     // data to be sent
-    let dataToApp = {type : "Rectangle", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected}};
+    let dataToApp = {type : "Rectangle", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected, subway: subwaySelected}, connected: false};
 
     // validating data
     async function validateForm() {
@@ -49,10 +51,11 @@ function RectangleForm() {
             dataToApp.dataArr[0].south = bottom;
             dataToApp.dataArr[0].west = left;
             dataToApp.dataArr[0].east = right;
-            console.log(`dataToApp.dataArr = ${dataToApp.dataArr}`);
             dataToApp.transport.bus = autobusSelected;
             dataToApp.transport.tram = tramSelected;
             dataToApp.transport.trolleybus = trolleybusSelected;
+            dataToApp.transport.subway = subwaySelected;
+            dataToApp.connected = connected;
             navigate('/app', {state: dataToApp});
         }
     }
@@ -71,7 +74,16 @@ function RectangleForm() {
                         checked={trolleybusSelected} onChange={(e) => setTrolleybusSelected(e.target.checked)}/>
                         <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Трамвай</Typography>} 
                         checked={tramSelected} onChange={(e) => setTramSelected(e.target.checked)}/>
+                        <FormControlLabel control={<Checkbox size="small"/>} label={<Typography fontSize={13}>Метро</Typography>} 
+                        checked={subwaySelected} onChange={(e) => setSubwaySelected(e.target.checked)}/>
                     </FormGroup>
+                    <div>
+                        <FormLabel component="legend">Граф</FormLabel>
+                        <RadioGroup className={styles.CheckboxForm} value={connected} onChange={(e) => setConnected(e.target.value)}>
+                            <FormControlLabel value={true} control={<Radio/>} label={<Typography fontSize={13}>Связный</Typography>}></FormControlLabel>
+                            <FormControlLabel value={false} control={<Radio/>} label={<Typography fontSize={13}>Несвязный</Typography>}></FormControlLabel>
+                        </RadioGroup>
+                    </div>
                 </div>
                 <button type='button' className={styles.btn} onClick={validateForm}>Apply</button>
             </form>

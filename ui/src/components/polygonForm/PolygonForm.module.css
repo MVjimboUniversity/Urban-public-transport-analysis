@@ -57,3 +57,12 @@
     display: flex;
     align-items: center;
 }
+
+.radioBoxForm {
+    display: flex;
+    width: 90%;
+    height: auto;
+    margin-left: 2%;
+    padding-top: 10px;
+    flex-direction: column;
+}
