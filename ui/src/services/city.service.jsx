@@ -3,11 +3,6 @@ import { BASE_URL } from ".."
 
 
 export const cityService = {
-    async getAll() {
-        const response = await axios.get('https://raw.githubusercontent.com/pensnarik/russian-cities/master/russian-cities.json')
-        
-        return response.data
-    },
     async getCity(cityName, transport, connected) {
         console.log('response = ', `http://localhost:80/network/name?city=${cityName}&connected=${connected}&bus=${transport.bus}&tram=${transport.tram}&trolleybus=${transport.trolleybus}`);
         const response = await axios.get(`http://localhost:80/network/name?city=${cityName}&connected=${connected}&bus=${transport.bus}&tram=${transport.tram}&trolleybus=${transport.trolleybus}`, {withCredentials: true});
