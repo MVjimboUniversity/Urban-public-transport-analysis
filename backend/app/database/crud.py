@@ -1,3 +1,4 @@
+import pandas as pd
 import geopandas as gpd
 from shapely import Polygon
 
@@ -122,7 +123,7 @@ RELS_GET_QUERY = '''
     v.osmid AS v, 
     r.osmid AS osmid, 
     r.name AS name, 
-    r.highway AS higway, 
+    r.highway AS highway, 
     r.lanes AS lanes, 
     r.maxspeed AS maxspeed, 
     r.railway AS railway, 
@@ -162,7 +163,7 @@ rels_get_bbox_query = lambda bbox_query: f'''
     v.osmid AS v, 
     r.osmid AS osmid, 
     r.name AS name, 
-    r.highway AS higway, 
+    r.highway AS highway, 
     r.lanes AS lanes, 
     r.maxspeed AS maxspeed, 
     r.railway AS railway, 
@@ -173,13 +174,13 @@ rels_get_bbox_query = lambda bbox_query: f'''
     '''
 
 
-def get_geo_df(tx, query):
-    results = tx.run(query)
-    df = results.to_df()
-    df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
-    gdf = gpd.GeoDataFrame(df, geometry='geometry')
-    gdf = gdf.drop(columns=["geometry_wkt"])
-    return gdf
+# def get_geo_df(tx, query):
+#     results = tx.run(query)
+#     df = results.to_df()
+#     df['geometry'] = gpd.GeoSeries.from_wkt(df['geometry_wkt'])
+#     gdf = gpd.GeoDataFrame(df, geometry='geometry')
+#     gdf = gdf.drop(columns=["geometry_wkt"])
+#     return gdf
 
 
 def get_df(tx, query):
@@ -188,7 +189,7 @@ def get_df(tx, query):
     return df
 
 
-def get_data(tx, query, bounds=None):
+def get_geo_df(tx, query, bounds=None):
     if bounds is None:
         results = tx.run(query)
     else:
@@ -212,12 +213,18 @@ def get_graph(driver, polygon):
 
         with driver.session() as session:
             node_get_query = node_get_bbox_query(bbox_query)
-            gdf_nodes = session.execute_read(get_data, node_get_query, custom_bounds)
+            gdf_nodes = session.execute_read(get_geo_df, node_get_query, custom_bounds)
+            
+            gdf_nodes = gdf_nodes[gdf_nodes["geometry"].within(custom_polygon)]
 
             df_center = session.execute_read(get_df, CENTER_GET_QUERY)
+            custom_centroid = custom_polygon.centroid
+            df_center = pd.DataFrame(data={"lat": custom_centroid.y, "lon": custom_centroid.x}, index=[0, ])
 
             rels_get_query = rels_get_bbox_query(bbox_query)
-            gdf_relationships = session.execute_read(get_data, rels_get_query, custom_bounds)
+            gdf_relationships = session.execute_read(get_geo_df, rels_get_query, custom_bounds)
+            
+            gdf_relationships = gdf_relationships[gdf_relationships["geometry"].within(custom_polygon)]
     
     else:
         with driver.session() as session:
