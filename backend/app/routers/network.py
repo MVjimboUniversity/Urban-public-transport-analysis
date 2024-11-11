@@ -4,6 +4,7 @@ import osmnx as ox
 import pandas as pd
 from fastapi import APIRouter, Query, Body, Depends
 from shapely import Polygon
+import networkx as nx
 
 #import app.public_transport_osmnx.osmnx as ox
 from app.database import driver, create_graph, get_graph, check_graph, remove_graph
@@ -42,9 +43,85 @@ async def network_by_name(
     """
     Возвращает сеть общественного транспорта по названию.
     """
+    
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
-    G = ox.graph_from_place(city, simplify=True, retain_all=True, network_type="drive")
+    pd.set_option('display.max_columns', None)
+    nodes_overpass_query = """
+    [out:json];
+    area[name="Санкт-Петербург"]->.searchArea;
+    node["public_transport"="stop_position"](area.searchArea)->.nodes;
+    (
+    .nodes;
+    );
+    out body;
+    >;
+    out skel qt;
+    """
+    nodes_response = ox._overpass._overpass_request(data={"data": nodes_overpass_query})
+    nodes_df = pd.DataFrame.from_dict(nodes_response['elements'])
+
+    nodes_list = []
+    for row in nodes_response['elements']:
+        tmp_dict = row['tags']
+        tmp_dict['osmid']=row['id']
+        tmp_dict['x'] = row['lat']
+        tmp_dict['y'] = row['lon']
+        nodes_list.append(tmp_dict)
+    nodes_df = pd.DataFrame.from_dict(nodes_list)
+    G = nx.MultiDiGraph()       #создаем пустой граф
+    if "crs" not in G.graph:
+        G.graph["crs"] = "EPSG:4326"    #задаем параметр для работы с координатами
+
+    for idx, row in nodes_df.iterrows():
+        if row['bus'] != 'yes': continue
+        G.add_node(row['osmid'], **row.to_dict())
+    overpass_query = """
+    [out:json];
+    area[name="Санкт-Петербург"]->.searchArea;
+    relation["route"="bus"](area.searchArea)->.routes;
+    (
+      .routes;
+    );
+    out body;
+    >;
+    out skel qt;
+    """
+    routes = ox._overpass._overpass_request(data={"data": overpass_query})
+    relations = pd.DataFrame(columns=['relation_id', 'relation_members', 'relation_ways'])
+
+    for element in routes["elements"]:
+        if element['type'] == 'relation':
+            node_list = []
+            way_list = []
+        
+            for member in element['members']:
+                if (member['type'] == 'node'): node_list.append(member['ref'])
+                elif (member['type'] == 'way'): way_list.append(member['ref'])
+                
+            relations.loc[len(relations)] = [element['id'], node_list, way_list]
+    graph_nodes = G.nodes
+
+
+    for idx, members in relations.iterrows():
+
+        members = members['relation_members']
+    
+        l = -1
+        for i in range(len(members)):
+            if members[i] in graph_nodes:
+                l = i
+                break
+        if l == -1: 
+            continue
+
+        r = l + 1
+        while r < len(members):
+            if members[r] in graph_nodes:
+                G.add_edge(members[l], members[r])
+                l = r
+            r += 1
+    
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = geocode_gdf[["lat", "lon"]]
     create_graph(driver, df_center, gdf_nodes, gdf_relationships)

@@ -32,15 +32,9 @@ RELS_INSERT_QUERY = '''
     UNWIND $rows AS path
     MATCH (u:Stop {osmid: path.u})
     MATCH (v:Stop {osmid: path.v})
-    MERGE (u)-[r:ROUTE_SEGMENT {osmid: path.osmid}]->(v)
-        SET r.name = path.name,
-            r.highway = path.highway,
-            r.railway = path.railway,
-            r.oneway = path.oneway,
-            r.lanes = path.lanes,
-            r.max_speed = path.maxspeed,
-            r.geometry_wkt = path.geometry_wkt,
-            r.length = toFloat(path.length)
+    MERGE (u)-[r:ROUTE_SEGMENT]->(v)
+        SET r.geometry_wkt = path.geometry_wkt
+
     RETURN COUNT(*) AS total
     '''
 
@@ -84,7 +78,7 @@ def insert_data(tx, query, rows, batch_size=10000):
 
 def create_graph(driver, df_center, gdf_nodes, gdf_relationships):
     # Changing GeoDataFrame to insert data
-    gdf_nodes.reset_index(inplace=True)
+    #gdf_nodes.reset_index(inplace=True)
     gdf_relationships.reset_index(inplace=True)
     gdf_nodes["geometry_wkt"] = gdf_nodes["geometry"].apply(lambda x: x.wkt)
     gdf_relationships["geometry_wkt"] = gdf_relationships["geometry"].apply(lambda x: x.wkt)
