@@ -56,7 +56,7 @@ function App(props) {
             setCenter([data.center[1], data.center[0]]);
             setNodes(data.nodes);
             setEdges(data.edges);
-            setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+            setBusEdges(data.edges.features.filter((el) => (el)).map(item => item.geometry.coordinates.map((el) => ([el[0], el[1]]))));
             setBusNodes(data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
             setTramEdges(data.edges.features.filter((el) => (el.properties.railway && el.properties.railway === 'tram')).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
             setTramNodes(data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));

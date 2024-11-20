@@ -77,7 +77,7 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
         center = [await data.center[1], await data.center[0]];
         setEdges(data.edges);
         setNodes(data.nodes);
-        setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+        setBusEdges(data.edges.features.filter((el) => (el)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
         setTramEdges(await data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
         setTramNodes(await data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
         setBusNodes(await data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
@@ -122,7 +122,7 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
                 <Polyline pathOptions={busEdgesOptions} positions={busEdges_}></Polyline>
                 {(busNodes_.map((el) =>
                     (
-                        <Circle key={el[2]} center={[el[0], el[1]]} radius={10} pathOptions={busNodesOptions}></Circle>
+                        <Circle key={el[2]} center={[el[1], el[0]]} radius={10} pathOptions={busNodesOptions}></Circle>
                     )
                 ))}
                 {/* tram */}
