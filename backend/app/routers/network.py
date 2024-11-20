@@ -47,16 +47,26 @@ async def network_by_name(
     geocode_gdf = ox.geocode_to_gdf(city)
     boundaries = geocode_gdf["geometry"]
     pd.set_option('display.max_columns', None)
-    nodes_overpass_query = """
-    [out:json];
-    area[name="Санкт-Петербург"]->.searchArea;
-    node["public_transport"="stop_position"](area.searchArea)->.nodes;
-    (
-    .nodes;
-    );
-    out body;
-    >;
-    out skel qt;
+    city_polygon = ox.geocoder.geocode_to_gdf(city).geometry.iloc[0]
+    if city_polygon.geom_type == "MultiPolygon":
+        coords = []
+        for polygon in city_polygon.geoms:
+            coords.extend([f"{lat} {lon}" for lon, lat in polygon.exterior.coords])
+        coords = " ".join(coords)
+        # coords = " ".join(f"{lat} {lon}" for lon, lat in list(city_polygon.geoms)[0].exterior.coords)
+    elif city_polygon.type == "Polygon":
+        coords = " ".join(f"{lat} {lon}" for lon, lat in city_polygon.exterior.coords)
+    else:
+        raise "ERROR POLYGON"
+
+    nodes_overpass_query = f"""
+        [out:json];
+        (
+          node["public_transport"="stop_position"](poly:"{coords}");
+        );
+        out body;
+        >;
+        out skel qt;
     """
     nodes_response = ox._overpass._overpass_request(data={"data": nodes_overpass_query})
     nodes_df = pd.DataFrame.from_dict(nodes_response['elements'])
@@ -76,10 +86,9 @@ async def network_by_name(
     for idx, row in nodes_df.iterrows():
         if row['bus'] != 'yes': continue
         G.add_node(row['osmid'], **row.to_dict())
-    overpass_query = """
+    overpass_query = f"""
     [out:json];
-    area[name="Санкт-Петербург"]->.searchArea;
-    relation["route"="bus"](area.searchArea)->.routes;
+    relation["route"="bus"](poly:"{coords}")->.routes;
     (
       .routes;
     );
