@@ -28,8 +28,9 @@ function RectangleForm() {
     const [trolleybusSelected, setTrolleybusSelected] = useState(false);
     const [subwaySelected, setSubwaySelected] = useState(false);
     const [connected, setConnected] = useState(false);
+    const [numberСentrality, setNumberСentrality] = useState(1);
     // data to be sent
-    let dataToApp = {type : "Rectangle", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected, subway: subwaySelected}, connected: false};
+    let dataToApp = {type : "Rectangle", dataArr: [], transport: {bus: autobusSelected, trolleybus: trolleybusSelected, tram: tramSelected, subway: subwaySelected}, connected: false, numberСentrality: numberСentrality};
 
     // validating data
     async function validateForm() {
@@ -78,14 +79,23 @@ function RectangleForm() {
                         checked={subwaySelected} onChange={(e) => setSubwaySelected(e.target.checked)}/>
                     </FormGroup>
                     <div>
-                        <FormLabel component="legend">Граф</FormLabel>
-                        <RadioGroup className={styles.CheckboxForm} value={connected} onChange={(e) => setConnected(e.target.value)}>
-                            <FormControlLabel value={true} control={<Radio/>} label={<Typography fontSize={13}>Связный</Typography>}></FormControlLabel>
-                            <FormControlLabel value={false} control={<Radio/>} label={<Typography fontSize={13}>Несвязный</Typography>}></FormControlLabel>
-                        </RadioGroup>
-                    </div>
+                    <FormLabel id="rg2" component="legend">Граф</FormLabel>
+                    <RadioGroup className={styles.CheckboxForm} value={connected} onChange={(e) => setConnected(e.target.value)}>
+                        <FormControlLabel name="rg2" value={true} control={<Radio/>} label={<Typography fontSize={13}>Связный</Typography>}></FormControlLabel>
+                        <FormControlLabel name="rg2" value={false} control={<Radio/>} label={<Typography fontSize={13}>Несвязный</Typography>}></FormControlLabel>
+                    </RadioGroup>
                 </div>
-                <button type='button' className={styles.btn} onClick={validateForm}>Apply</button>
+                <div>
+                    <FormLabel component="legend">Мера центральности</FormLabel>
+                    <RadioGroup id="rg1" className={styles.CheckboxForm} value={numberСentrality} onChange={(e) => setNumberСentrality(e.target.value)} >
+                        <FormControlLabel name="rg1" value={1} control={<Radio/>} label={<Typography fontSize={13}>По степени</Typography>} ></FormControlLabel>
+                        <FormControlLabel name="rg1" value={2} control={<Radio/>} label={<Typography fontSize={13}>По посредничеству</Typography>}></FormControlLabel>
+                        <FormControlLabel name="rg1" value={3} control={<Radio/>} label={<Typography fontSize={13}>По близости</Typography>}></FormControlLabel>
+                        <FormControlLabel name="rg1" value={4} control={<Radio/>} label={<Typography fontSize={13}>Page Rank</Typography>}></FormControlLabel>
+                    </RadioGroup>
+                </div>
+                </div>
+                <button type='button' className={styles.btn} onClick={validateForm}>Получить данные</button>
             </form>
     )
 }

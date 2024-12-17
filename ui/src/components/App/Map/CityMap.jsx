@@ -5,12 +5,46 @@ import { Marker, Popup } from "react-leaflet";
 import { cityService } from "../../../services/city.service";
 // import HashLoader from "react-spinners/HashLoader";
 
+//function colors(x)
 
 
-function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges, subwayNodes, edges, nodes}) {
+function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges, subwayNodes, edges, nodes,max,min,numberСentrality}) {
+
+    function colors(num,x1,x2,x3,x4)
+    {
+        //ed=360*
+        console.log(num,x1,x2,x3,x4);
+    let x;
+    if (Number(num)===1)
+    {
+        x=x1;
+    }
+    if (Number(num)===2)
+    {
+      x=x2;
+    }
+    if (Number(num)===3)
+    {
+       x=x3;
+    }
+    if (Number(num)===4)
+    {
+       x=x4;
+    }        
+
+    
+      let  l=0;
+      let  r=120;
+      let  a=min;
+      let  b=max;
+      let z= r-(r - l) * (x-a)/(b-a);
+    //  console.log(z,a,b);
+        return 'hsl('+z+', 100%, 50%)';
+    }
+
     const tramEdgesOptions = { color: 'red' };
     const tramNodesOptions = { color: 'darkred'};
-    const busEdgesOptions = { color: '#398bff' };
+    const busEdgesOptions = { color: '#0000FF' };
     const busNodesOptions = { color: 'darkblue' };
     const subwayEdgesOptions = { color: 'lime'};
     const subwayNodesOptions = { color: '#304D30'};
@@ -38,7 +72,20 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
         });
         return null;
     }
+    function getMaxOfArray(numArray) {
+        return Math.max.apply(null, numArray);
+      }
+      function getMinOfArray(numArray) {
+        return Math.min.apply(null, numArray);
+      }
+    function transportname(id,yes)
+    {
+        if (id === 1 && yes === 'yes')
+            return 'Автобус';
+        if (id===2 && yes === 'yes')
+            return 'Трамвай';
 
+    }
     // button handling
     function clear() {
         setPositions([]);
@@ -77,12 +124,24 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
         center = [await data.center[1], await data.center[0]];
         setEdges(data.edges);
         setNodes(data.nodes);
-        setBusEdges(data.edges.features.filter((el) => (el)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
-        setTramEdges(await data.edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
-        setTramNodes(await data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
-        setBusNodes(await data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
-        setSubwayNodes(data.nodes.features.filter((el) => (!el.properties.tram && !el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]))
-        setSubwayEdges(data.edges.features.filter((el) => (el.properties.railway && el.properties.railway === 'subway')).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+    //    setBusEdges(data.edges);
+   //     setBusNodes(data.nodes);
+
+      
+    setBusEdges(data.edges.features.filter((el) => (el)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+    setBusNodes(await data.nodes.features.filter((el) => (el)).map(item => [item.properties.y, item.properties.x, item.id, item.properties.center_count, item.properties.name, item.properties.transport, item.properties.closeness_centrality, item.properties.betweenness_centrality, item.properties.pagerank]));
+    
+ //let   allcenter=(await data.nodes.features.filter((el) => (el)).map(item => [item.properties.center_count]));
+ //   console.log(allcenter);
+  //  max=Math.max(allcenter);
+  //  min=Math.min(allcenter);
+
+    //    setBusEdges(data.edges.features.filter((el) => (el.properties.highway)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
+   //     setTramEdges(edges.features.filter((el) => (el.properties.railway)).map(item => item.geometry.coordinates.map((el) => ([el[0], el[1]]))));
+   //     setTramNodes(await data.nodes.features.filter((el) => (el.properties.tram)).map(item => [item.properties.y, item.properties.x, item.id]));
+    //    setBusNodes(await data.nodes.features.filter((el) => (el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]));
+   //     setSubwayNodes(data.nodes.features.filter((el) => (!el.properties.tram && !el.properties.bus)).map(item => [item.properties.y, item.properties.x, item.id]))
+   //     setSubwayEdges(data.edges.features.filter((el) => (el.properties.railway && el.properties.railway === 'subway')).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
     }
     // useEffect( () => {
     //     const fetchData = async () => {
@@ -106,7 +165,9 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
     // console.log('asdadd', tramEdges);
 
     return (
+        
         <div className={styles.MapContainer}>
+            
             <MapContainer className={styles.Map} center={center} zoom={13} scrollWheelZoom={false}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -115,14 +176,27 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
                 <Marker position={center}>
                     <Popup>
                       Центр города.
+  
                     </Popup>
                 </Marker>
                 <LocationGetter/>
+
                 {/* bus */}
                 <Polyline pathOptions={busEdgesOptions} positions={busEdges_}></Polyline>
                 {(busNodes_.map((el) =>
                     (
-                        <Circle key={el[2]} center={[el[1], el[0]]} radius={10} pathOptions={busNodesOptions}></Circle>
+                        <Circle key={el[2]} center={[el[1], el[0]]} radius={20} color={colors(numberСentrality,el[3],el[6],el[7],el[8])} >
+                        <Popup>
+                         <p>Данные</p>
+                         <p>osmid: {el[2]}</p>
+                         <p>Наименование: {el[4]}</p>
+                         <p>Транспорт: {el[5]}</p>
+                         <p>Центральность по степени (degree centrality): {el[3]}</p>
+                         <p>Центральность по близости (closeness centrality): {el[6]}</p>
+                         <p>Центральность по посредничеству (betweenness centrality): {el[7]}</p>
+                         <p>Page Rank: {el[8]}</p>
+                        </Popup>
+                        </Circle>
                     )
                 ))}
                 {/* tram */}
@@ -171,6 +245,8 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
                     <span className={styles.objectname}>Остановка метро</span>
                 </div>
             </div>
+
+  
         </div>
   )
 }
