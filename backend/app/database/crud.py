@@ -15,19 +15,34 @@ NODE_INSERT_QUERY = '''
     UNWIND $rows AS row
     WITH row WHERE row.osmid IS NOT NULL
     MERGE (s:Stop {osmid: row.osmid})
-        SET s.location = point({latitude: row.y, longitude: row.x }),
+        SET s.location = point({latitude: row.x, longitude: row.y }),
             s.name = row.name,
-            s.highway = row.highway,
-            s.public_transport = row.public_transport,
-            s.routes = row.routes,
-            s.tram = row.tram,
-            s.bus = row.bus,
-            s.geometry_wkt = row.geometry_wkt,
-            s.street_count = toInteger(row.street_count)
+            s.stops_osmid = row.stops_osmid,
+            s.transport = row.transport,
+            s.center_count = toFloat(row.center_count),
+            s.closeness_centrality = toFloat(row.closeness_centrality),
+            s.betweenness_centrality = toFloat(row.betweenness_centrality),
+            s.pagerank = toFloat(row.pagerank)
     RETURN COUNT(*) as total
     '''
 
 # Cypher query to import our road network relationships GeoDataFrame
+
+# RELS_INSERT_QUERY = '''
+#     UNWIND $rows AS path
+#     MATCH (u:Stop {osmid: path.u})
+#     MATCH (v:Stop {osmid: path.v})
+#     MERGE (u)-[r:ROUTE_SEGMENT {osmid: path.osmid}]->(v)
+#         SET r.name = path.name,
+#             r.highway = path.highway,
+#             r.railway = path.railway,
+#             r.oneway = path.oneway,
+#             r.lanes = path.lanes,
+#             r.max_speed = path.maxspeed,
+#             r.geometry_wkt = path.geometry_wkt,
+#             r.length = toFloat(path.length)
+#     RETURN COUNT(*) AS total
+#     '''
 RELS_INSERT_QUERY = '''
     UNWIND $rows AS path
     MATCH (u:Stop {osmid: path.u})
@@ -78,7 +93,7 @@ def insert_data(tx, query, rows, batch_size=10000):
 
 def create_graph(driver, df_center, gdf_nodes, gdf_relationships):
     # Changing GeoDataFrame to insert data
-    #gdf_nodes.reset_index(inplace=True)
+    gdf_nodes.reset_index(inplace=True)
     gdf_relationships.reset_index(inplace=True)
     gdf_nodes["geometry_wkt"] = gdf_nodes["geometry"].apply(lambda x: x.wkt)
     gdf_relationships["geometry_wkt"] = gdf_relationships["geometry"].apply(lambda x: x.wkt)
@@ -106,7 +121,8 @@ NODE_GET_QUERY = '''
     s.bus AS bus, 
     s.routes AS routes, 
     s.street_count AS street_count, 
-    s.geometry_wkt AS geometry_wkt
+    s.geometry_wkt AS geometry_wkt,
+    s.center_count AS center_count
     '''
 
 
@@ -144,7 +160,8 @@ node_get_bbox_query = lambda bbox_query: f'''
     s.bus AS bus, 
     s.routes AS routes, 
     s.street_count AS street_count, 
-    s.geometry_wkt AS geometry_wkt
+    s.geometry_wkt AS geometry_wkt,
+    s.center_count AS center_count
     '''
 
 
