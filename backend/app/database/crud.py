@@ -48,7 +48,8 @@ RELS_INSERT_QUERY = '''
     MATCH (u:Stop {osmid: path.u})
     MATCH (v:Stop {osmid: path.v})
     MERGE (u)-[r:ROUTE_SEGMENT]->(v)
-        SET r.geometry_wkt = path.geometry_wkt
+        SET r.geometry_wkt = path.geometry_wkt,
+            r.relations = path.relations
 
     RETURN COUNT(*) AS total
     '''

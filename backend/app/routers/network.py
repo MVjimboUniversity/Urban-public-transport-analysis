@@ -216,7 +216,7 @@ def inside_bound_filter_nodes(routes, nodes, percentage_bound=100) -> tuple:
     for x in nodes:
         valid_bus_node[x['osmid']] = True
 
-    relations = pd.DataFrame(columns=['relation_id', 'relation_members', 'relation_ways'])
+    relations = pd.DataFrame(columns=['relation_id', 'relation_name','relation_members', 'relation_ways'])
 
     for element in routes["elements"]:
         if element['type'] != 'relation':
@@ -235,7 +235,7 @@ def inside_bound_filter_nodes(routes, nodes, percentage_bound=100) -> tuple:
             remove_nodes_cluster(valid_bus_node, node_list)
             continue
 
-        relations.loc[len(relations)] = [element['id'], node_list, way_list]
+        relations.loc[len(relations)] = [element['id'], element['tags']['name'], node_list, way_list]
 
     return (valid_bus_node, relations)
 
@@ -287,6 +287,8 @@ def insert_cluster_node_graph(graph, nodes, valid_bus_node, max_dist=200):
 
 def insert_cluster_edge_graph(graph, relations, valid_bus_node, node_cluster, cluster):
 
+    relation_names = {}
+
     for idx, row in relations.iterrows():
         members = row['relation_members']
         l = -1
@@ -305,8 +307,17 @@ def insert_cluster_edge_graph(graph, relations, valid_bus_node, node_cluster, cl
                     # print(fst)
                     graph.add_edge(fst, snd, length=math.dist([graph.nodes[fst]['x'], graph.nodes[fst]['y']],
                                                           [graph.nodes[snd]['x'], graph.nodes[snd]['y']]) * 111000)
+                
+                if (fst, snd) not in relation_names:
+                    relation_names[(fst, snd)] = {'relations' : []}
+                if row['relation_name'] not in relation_names[(fst, snd)]:
+                    relation_names[(fst, snd)]['relations'].append(row['relation_name'])
                 l = r
             r += 1
+    nx.set_edge_attributes(graph, relation_names)
+    # print(graph.edges.data(True))
+    # print(relation_names)
+        
     
 
 
@@ -330,7 +341,7 @@ async def network_by_name(
     
     # nodes.sort(key=lambda x: (str(x['name']), x['x'], x['y']))
 
-    G = nx.MultiGraph()  # создаем пустой граф
+    G = nx.Graph()  # создаем пустой граф
     if "crs" not in G.graph:
         G.graph["crs"] = "EPSG:4326"  # задаем параметр для работы с координатами
 
@@ -349,6 +360,7 @@ async def network_by_name(
 
 
     # print(G.nodes)
+    G = nx.MultiGraph(G)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     characters = (list(nx.degree_centrality(G).items()))
     characters1 = (list(nx.closeness_centrality(G).items()))
@@ -366,10 +378,9 @@ async def network_by_name(
         i = i + 1
         G.add_node(stop_id, **row.to_dict())
 
-    print(G)
+    
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     df_center = geocode_gdf[["lat", "lon"]]
-    print(df_center)
     data = {
         "center": [geocode_gdf.loc[0, "lon"], geocode_gdf.loc[0, "lat"]],
         "boundaries": json.loads(boundaries.to_json()),
@@ -399,7 +410,7 @@ async def network_by_bbox(
     nodes_response, routes, ways_info = get_bbox_data([south, west, north, east], filters)
     nodes_df = make_nodes_dataframe(nodes_response)
     nodes = transport_filter_nodes(nodes_df, filters)
-    G = nx.MultiGraph()  # создаем пустой граф
+    G = nx.Graph()  # создаем пустой граф
     if "crs" not in G.graph:
         G.graph["crs"] = "EPSG:4326"  # задаем параметр для работы с координатами
     valid_bus_node, relations = inside_bound_filter_nodes(routes, nodes, percentage_bound=50)
@@ -411,6 +422,7 @@ async def network_by_bbox(
 
     # G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True,
     #                                                     network_types=filters, connected=connected)
+    G = nx.MultiGraph(G)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     characters = (list(nx.degree_centrality(G).items()))
     characters1 = (list(nx.closeness_centrality(G).items()))
@@ -454,7 +466,7 @@ async def network_by_polygon(
     nodes_response, routes, ways_info = get_city_polygon_data(Polygon(polygon), filters)
     nodes_df = make_nodes_dataframe(nodes_response)
     nodes = transport_filter_nodes(nodes_df, filters)
-    G = nx.MultiGraph()  # создаем пустой граф
+    G = nx.Graph()  # создаем пустой граф
     if "crs" not in G.graph:
         G.graph["crs"] = "EPSG:4326"  # задаем параметр для работы с координатами
     valid_bus_node, relations = inside_bound_filter_nodes(routes, nodes, percentage_bound=50)
@@ -466,6 +478,7 @@ async def network_by_polygon(
 
     # G, routes, stops, paths_routes = ox.graph_from_bbox(north, south, east, west, simplify=True, retain_all=True,
     #                                                     network_types=filters, connected=connected)
+    G = nx.MultiGraph(G)
     gdf_nodes, gdf_relationships = ox.graph_to_gdfs(G)
     characters = (list(nx.degree_centrality(G).items()))
     characters1 = (list(nx.closeness_centrality(G).items()))
