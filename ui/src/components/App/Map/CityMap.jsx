@@ -13,7 +13,7 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
     function colors(num,x1,x2,x3,x4)
     {
         //ed=360*
-        console.log(num,x1,x2,x3,x4);
+   //     console.log(num,x1,x2,x3,x4);
     let x;
     if (Number(num)===1)
     {
@@ -80,9 +80,9 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
       }
     function transportname(id,yes)
     {
-        if (id === 1 && yes === 'yes')
+        if (id==1 && yes=='yes')
             return 'Автобус';
-        if (id===2 && yes === 'yes')
+        if (id==2 && yes=='yes')
             return 'Трамвай';
 
     }
@@ -127,9 +127,9 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
     //    setBusEdges(data.edges);
    //     setBusNodes(data.nodes);
 
-      
-    setBusEdges(data.edges.features.filter((el) => (el)).map(item => item.geometry.coordinates.map((el) => ([el[1], el[0]]))));
-    setBusNodes(await data.nodes.features.filter((el) => (el)).map(item => [item.properties.y, item.properties.x, item.id, item.properties.center_count, item.properties.name, item.properties.transport, item.properties.closeness_centrality, item.properties.betweenness_centrality, item.properties.pagerank]));
+      //item.properties.length
+      setBusEdges(data.edges.features.filter((el) => (el)).map(item => [item.geometry.coordinates[0],item.geometry.coordinates[1],item.properties.length] ));
+    setBusNodes(await data.nodes.features.filter((el) => (el)).map(item => [item.properties.y, item.properties.x, item.id, item.properties.center_count, item.properties.name, item.properties.bus, item.properties.tram, item.properties.closeness_centrality, item.properties.betweenness_centrality, item.properties.pagerank]));
     
  //let   allcenter=(await data.nodes.features.filter((el) => (el)).map(item => [item.properties.center_count]));
  //   console.log(allcenter);
@@ -182,19 +182,29 @@ function CityMap({tramNodes, tramEdges, busNodes, busEdges, center, subwayEdges,
                 <LocationGetter/>
 
                 {/* bus */}
-                <Polyline pathOptions={busEdgesOptions} positions={busEdges_}></Polyline>
+                {(busEdges_.map((el) =>
+                    (
+                        
+                <Polyline pathOptions={busEdgesOptions} positions={[el[1],el[0]]}>
+                    <Popup>
+                    <p>Данные</p>
+                   <p>Длинна {el[2]}</p> 
+                    </Popup>
+                </Polyline>
+                    )
+                    ))}
                 {(busNodes_.map((el) =>
                     (
-                        <Circle key={el[2]} center={[el[1], el[0]]} radius={20} color={colors(numberСentrality,el[3],el[6],el[7],el[8])} >
+                        <Circle key={el[2]} center={[el[1], el[0]]} radius={20} color={colors(numberСentrality,el[3],el[7],el[8],el[9])} >
                         <Popup>
                          <p>Данные</p>
                          <p>osmid: {el[2]}</p>
                          <p>Наименование: {el[4]}</p>
-                         <p>Транспорт: {el[5]}</p>
+                         <p>Транспорт: {transportname(1,el[5])} {transportname(2,el[6])}</p>
                          <p>Центральность по степени (degree centrality): {el[3]}</p>
-                         <p>Центральность по близости (closeness centrality): {el[6]}</p>
-                         <p>Центральность по посредничеству (betweenness centrality): {el[7]}</p>
-                         <p>Page Rank: {el[8]}</p>
+                         <p>Центральность по близости (closeness centrality): {el[7]}</p>
+                         <p>Центральность по посредничеству (betweenness centrality): {el[8]}</p>
+                         <p>Page Rank: {el[9]}</p>
                         </Popup>
                         </Circle>
                     )
