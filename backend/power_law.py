@@ -40,7 +40,7 @@ async def main():
     response = await network_by_name(city_name, connected, filters)
     data = json.loads(response)
     features_list = data['nodes']['features']
-    center_count = [feature['properties']['center_count '] for feature in features_list]
+    center_count = [feature['properties']['center_count'] for feature in features_list]
     # 拟合幂律分布（可能需要调整，取决于数据的特性和范围）
     params, _ = curve_fit(power_law, center_count , np.arange(len(center_count)), p0=[1])
     # 绘制分布图和拟合结果
