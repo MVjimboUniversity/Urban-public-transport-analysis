@@ -33,7 +33,7 @@ def plot_power_law(values, fit_params):
     plt.show()
  
 async def main():
-    city_name = input("请输入城市名称: ")
+    city_name = input("Пожалуйста, введите название города: ")
     connected = False
     filters = {'bus': True, 'tram': False, 'trolleybus': False, 'subway': False}
     
