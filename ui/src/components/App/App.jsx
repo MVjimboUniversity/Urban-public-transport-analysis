@@ -94,7 +94,7 @@ function App(props) {
             //  console.log("min="+Math.min(allcenter));
 
 
-            setBusEdges(data.edges.features.filter((el) => (el)).map(item => [item.geometry.coordinates[0],item.geometry.coordinates[1],item.properties.length] ));
+            setBusEdges(data.edges.features.filter((el) => (el)).map(item => [item.geometry.coordinates[0],item.geometry.coordinates[1],item.properties.length,item.properties.relations] ));
             setBusNodes(data.nodes.features.filter((el) => (el)).map(item => [item.properties.y, item.properties.x, item.id,item.properties.center_count, item.properties.name, item.properties.bus, item.properties.tram, item.properties.closeness_centrality,item.properties.betweenness_centrality,item.properties.pagerank]));
   //          console.log(busNodes+"\n");
   //          console.log(busEdges+"\n");
