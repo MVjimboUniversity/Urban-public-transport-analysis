@@ -26,7 +26,7 @@ def plot_power_law(values, fit_params):
     plt.plot(fit_x, fit_y_cdf, '-', label=f'Power Law Fit: α={fit_params[0]:.2f}')
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlabel('Center Count ')
+    plt.xlabel('Center Count')
     plt.ylabel('Cumulative Distribution Function')
     plt.legend()
     plt.title('Center Count  Distribution and Power Law Fit')
